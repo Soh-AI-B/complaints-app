@@ -5,7 +5,6 @@ import 'app.dart';
 import 'injection_container.dart' as di;
 import 'core/services/fcm_service.dart';
 import 'core/services/local_notification_service.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,9 +12,7 @@ void main() async {
   // Initialize Firebase with error handling
   bool firebaseInitialized = false;
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await Firebase.initializeApp();
     firebaseInitialized = true;
     print('Firebase initialized successfully');
 

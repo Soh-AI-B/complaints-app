@@ -1,7 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/utils/file_helper.dart';
-import '../../../core/utils/web_compatible_image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../blocs/tasks/task_bloc.dart';
@@ -11,7 +11,6 @@ import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/tasks/category_dropdown.dart';
-import '../../widgets/common/cross_file_image.dart';
 import '../../../core/services/cloudinary_service.dart';
 import '../../../core/constants/app_constants.dart';
 
@@ -32,7 +31,7 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
   // Priority is always 'Normal' for employee-created tasks
   // Only managers/admins can change priority later
   final String _taskPriority = 'Normal';
-  List<CrossFile> _selectedImages = []; // Changed to support multiple images
+  List<File> _selectedImages = []; // Changed to support multiple images
   bool _isUploading = false;
 
   final List<String> _categories = AppConstants.taskCategories;
@@ -59,10 +58,17 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
         return;
       }
 
-      final image = await WebCompatibleImagePickerHelper.pickImageFromCamera(context);
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+
       if (image != null) {
         setState(() {
-          _selectedImages.add(image);
+          _selectedImages.add(File(image.path));
         });
       }
     } catch (e) {
@@ -92,10 +98,17 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
         return;
       }
 
-      final image = await WebCompatibleImagePickerHelper.pickImageFromGallery(context);
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+
       if (image != null) {
         setState(() {
-          _selectedImages.add(image);
+          _selectedImages.add(File(image.path));
         });
       }
     } catch (e) {
@@ -451,8 +464,8 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: CrossFileImage(
-                      crossFile: _selectedImages[index],
+                    child: Image.file(
+                      _selectedImages[index],
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,

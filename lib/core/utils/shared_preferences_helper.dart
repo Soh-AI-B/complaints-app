@@ -1,7 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:convert';
-import 'web_storage_helper.dart';
 
 class SharedPreferencesHelper {
   static SharedPreferences? _preferences;
@@ -280,7 +278,7 @@ class SharedPreferencesHelper {
     return true;
   }
 
-  // User session management (Web and Mobile compatible)
+  // User session management
   static Future<bool> saveUserSession({
     required String userId,
     required String email,
@@ -289,71 +287,29 @@ class SharedPreferencesHelper {
     String? team,
     String? authToken,
   }) async {
-    if (kIsWeb) {
-      // Use WebStorageHelper for web
-      await WebStorageHelper.saveUserSession(
-        email: email,
-        name: name,
-        role: role,
-        team: team,
-        token: authToken,
-      );
-      return true;
-    } else {
-      // Use SharedPreferences for mobile
-      await Future.wait([
-        setUserId(userId),
-        setUserEmail(email),
-        setUserName(name),
-        setUserRole(role),
-        setIsLoggedIn(true),
-        if (team != null) setUserTeam(team),
-        if (authToken != null) setAuthToken(authToken),
-      ]);
-      return true;
-    }
+    await Future.wait([
+      setUserId(userId),
+      setUserEmail(email),
+      setUserName(name),
+      setUserRole(role),
+      setIsLoggedIn(true),
+      if (team != null) setUserTeam(team),
+      if (authToken != null) setAuthToken(authToken),
+    ]);
+    return true;
   }
 
   static Future<bool> clearUserSession() async {
-    if (kIsWeb) {
-      // Use WebStorageHelper for web
-      await WebStorageHelper.clearUserSession();
-      return true;
-    } else {
-      // Use SharedPreferences for mobile
-      await Future.wait([
-        remove('user_id'),
-        remove('user_email'),
-        remove('user_name'),
-        remove('user_role'),
-        remove('user_team'),
-        remove('auth_token'),
-        setIsLoggedIn(false),
-      ]);
-      return true;
-    }
-  }
-
-  static Future<bool> getIsLoggedInAsync() async {
-    if (kIsWeb) {
-      return await WebStorageHelper.isUserLoggedIn();
-    } else {
-      return getIsLoggedIn();
-    }
-  }
-
-  static Future<Map<String, String?>> getSavedUserData() async {
-    if (kIsWeb) {
-      return await WebStorageHelper.getSavedUserData();
-    } else {
-      return {
-        'email': getUserEmail(),
-        'name': getUserName(),
-        'role': getUserRole(),
-        'team': getUserTeam(),
-        'token': getAuthToken(),
-      };
-    }
+    await Future.wait([
+      remove('user_id'),
+      remove('user_email'),
+      remove('user_name'),
+      remove('user_role'),
+      remove('user_team'),
+      remove('auth_token'),
+      setIsLoggedIn(false),
+    ]);
+    return true;
   }
 
   // Ensure SharedPreferences is initialized

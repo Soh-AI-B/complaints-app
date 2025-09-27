@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../core/utils/date_formatter.dart';
 import '../../blocs/tasks/task_bloc.dart';
 import '../../blocs/tasks/task_event.dart';
@@ -10,7 +10,6 @@ import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/full_screen_image_viewer.dart';
-import '../../widgets/common/cross_file_image.dart';
 import '../../widgets/tasks/category_dropdown.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/dimensions.dart';
@@ -21,8 +20,6 @@ import '../../../data/repositories/task_note_repository_impl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
-import '../../../core/utils/web_compatible_image_picker.dart';
-import '../../../core/utils/file_helper.dart';
 import '../../../core/services/cloudinary_service.dart';
 
 class TaskManagementPage extends StatefulWidget {
@@ -47,7 +44,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
   String _selectedPriority = 'Normal';
   String _selectedStatus = 'Pending';
   DateTime? _estimatedCompletion;
-    List<CrossFile> _selectedImages = []; // Changed to support multiple images
+  List<File> _selectedImages = []; // Changed to support multiple images
   List<String> _currentImageUrls = []; // Changed to support multiple images
 
   // Employee selection - COMMENTED OUT (not needed for complaint creation)
@@ -754,8 +751,8 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                  child: CrossFileImage(
-                    crossFile: _selectedImages[index],
+                  child: Image.file(
+                    _selectedImages[index],
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
@@ -815,7 +812,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
     );
   }
 
-  void _showLocalImageDialog(CrossFile imageFile) {
+  void _showLocalImageDialog(File imageFile) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -830,39 +827,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
-              kIsWeb
-                  ? FutureBuilder<Uint8List>(
-                      future: imageFile.readAsBytes(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Expanded(
-                            child: Image.memory(
-                              snapshot.data!,
-                              fit: BoxFit.contain,
-                            ),
-                          );
-                        }
-                        return const Expanded(
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      },
-                    )
-                  : FutureBuilder<Uint8List>(
-                      future: imageFile.readAsBytes(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Expanded(
-                            child: Image.memory(
-                              snapshot.data!,
-                              fit: BoxFit.contain,
-                            ),
-                          );
-                        }
-                        return const Expanded(
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      },
-                    ),
+              Expanded(child: Image.file(imageFile, fit: BoxFit.contain)),
             ],
           ),
         );
@@ -901,10 +866,17 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
       return;
     }
 
-    final image = await WebCompatibleImagePickerHelper.pickImageFromCamera(context);
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+      maxWidth: 1200,
+      maxHeight: 1200,
+    );
+
     if (image != null) {
       setState(() {
-        _selectedImages.add(image);
+        _selectedImages.add(File(image.path));
       });
     }
   }
@@ -924,10 +896,17 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
       return;
     }
 
-    final image = await WebCompatibleImagePickerHelper.pickImageFromGallery(context);
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+      maxWidth: 1200,
+      maxHeight: 1200,
+    );
+
     if (image != null) {
       setState(() {
-        _selectedImages.add(image);
+        _selectedImages.add(File(image.path));
       });
     }
   }

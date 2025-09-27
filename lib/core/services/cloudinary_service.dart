@@ -1,10 +1,8 @@
-import 'dart:io' if (dart.library.html) 'dart:html' as io;
+import 'dart:io';
 import 'dart:convert';
 import 'package:cloudinary_public/cloudinary_public.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
-import '../utils/file_helper.dart';
 
 class CloudinaryService {
   static const String _cloudName =
@@ -31,34 +29,20 @@ class CloudinaryService {
   /// Upload image to Cloudinary
   /// Returns the secure URL of the uploaded image
   Future<String> uploadImage({
-    required CrossFile imageFile,
+    required File imageFile,
     required String fileName,
     String? folder,
   }) async {
     try {
-      if (kIsWeb) {
-        // For web, use bytes-based upload
-        final bytes = await imageFile.readAsBytes();
-        final result = await _cloudinary.uploadFile(
-          CloudinaryFile.fromBytesData(
-            bytes,
-            identifier: fileName,
-            folder: folder ?? 'complaints',
-            publicId: fileName,
-          ),
-        );
-        return result.secureUrl;
-      } else {
-        // For mobile, use file path
-        final result = await _cloudinary.uploadFile(
-          CloudinaryFile.fromFile(
-            imageFile.path,
-            folder: folder ?? 'complaints',
-            publicId: fileName,
-          ),
-        );
-        return result.secureUrl;
-      }
+      final result = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path,
+          folder: folder ?? 'complaints',
+          publicId: fileName,
+        ),
+      );
+
+      return result.secureUrl;
     } catch (e) {
       throw Exception('Failed to upload image: $e');
     }
@@ -67,46 +51,29 @@ class CloudinaryService {
   /// Upload image with transformations for optimization
   /// Automatically resizes and compresses images
   Future<String> uploadOptimizedImage({
-    required CrossFile imageFile,
+    required File imageFile,
     required String fileName,
     String? folder,
     int maxWidth = 1200,
     int quality = 80,
   }) async {
     try {
-      if (kIsWeb) {
-        // For web, use bytes-based upload
-        final bytes = await imageFile.readAsBytes();
-        final result = await _cloudinary.uploadFile(
-          CloudinaryFile.fromBytesData(
-            bytes,
-            identifier: fileName,
-            folder: folder ?? 'complaints',
-            publicId: fileName,
-          ),
-        );
-        return getOptimizedUrl(
-          result.secureUrl,
-          width: maxWidth,
-          quality: quality,
-          format: 'auto',
-        );
-      } else {
-        // For mobile, use file path  
-        final result = await _cloudinary.uploadFile(
-          CloudinaryFile.fromFile(
-            imageFile.path,
-            folder: folder ?? 'complaints',
-            publicId: fileName,
-          ),
-        );
-        return getOptimizedUrl(
-          result.secureUrl,
-          width: maxWidth,
-          quality: quality,
-          format: 'auto',
-        );
-      }
+      // For optimization, we'll upload normally and use URL transformations
+      final result = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path,
+          folder: folder ?? 'complaints',
+          publicId: fileName,
+        ),
+      );
+
+      // Return optimized URL
+      return getOptimizedUrl(
+        result.secureUrl,
+        width: maxWidth,
+        quality: quality,
+        format: 'auto',
+      );
     } catch (e) {
       throw Exception('Failed to upload optimized image: $e');
     }

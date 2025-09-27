@@ -5,7 +5,6 @@ import 'core/routes/app_routes.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/strings.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
-import 'presentation/pages/offline/offline_page.dart';
 import 'injection_container.dart' as di;
 
 class ComplaintsApp extends StatelessWidget {
@@ -13,28 +12,16 @@ class ComplaintsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if Firebase services are available by trying to get AuthBloc
-    try {
-      final authBloc = di.sl<AuthBloc>();
-      return BlocProvider.value(
-        value: authBloc,
-        child: MaterialApp(
-          title: AppStrings.appName,
-          debugShowCheckedModeBanner: false,
-          theme: _buildTheme(),
-          initialRoute: AppRoutes.splash,
-          onGenerateRoute: RouteGenerator.generateRoute,
-        ),
-      );
-    } catch (e) {
-      print('Firebase services not available, showing offline page: $e');
-      return MaterialApp(
+    return BlocProvider(
+      create: (context) => di.sl<AuthBloc>(),
+      child: MaterialApp(
         title: AppStrings.appName,
         debugShowCheckedModeBanner: false,
         theme: _buildTheme(),
-        home: const OfflinePage(),
-      );
-    }
+        initialRoute: AppRoutes.splash,
+        onGenerateRoute: RouteGenerator.generateRoute,
+      ),
+    );
   }
 
   ThemeData _buildTheme() {

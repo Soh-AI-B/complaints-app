@@ -281,11 +281,6 @@ Future<void> init({bool firebaseAvailable = true}) async {
       print('All services registered successfully with Firebase');
     } else {
       print('Firebase not available - app will run with limited functionality');
-      // Register a simple offline message provider instead of full repositories
-      sl.registerLazySingleton<String>(
-        () => 'Firebase not available. Please check your connection and restart the app.',
-        instanceName: 'offline_message',
-      );
     }
 
     print('Dependency injection initialization complete');
@@ -294,5 +289,3 @@ Future<void> init({bool firebaseAvailable = true}) async {
     rethrow;
   }
 }
-
-

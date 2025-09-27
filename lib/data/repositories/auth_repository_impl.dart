@@ -3,12 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/error/exceptions.dart';
 import '../../core/error/failures.dart';
 import '../../core/network/network_info.dart';
-import '../../core/utils/shared_preferences_helper.dart';
 import '../../domain/entities/app_user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth/auth_local_datasource.dart';
 import '../datasources/auth/auth_remote_datasource.dart';
-import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -30,16 +28,6 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         final userModel = await remoteDataSource.signIn(email, password);
         await localDataSource.cacheUser(userModel);
-        
-        // Save user session for web persistence
-        await SharedPreferencesHelper.saveUserSession(
-          userId: userModel.userEmail, // Using email as userId since that's the unique identifier
-          email: userModel.userEmail,
-          name: userModel.name,
-          role: userModel.role,
-          team: userModel.team,
-        );
-        
         return Right(_userModelToAppUser(userModel));
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
@@ -90,10 +78,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await remoteDataSource.signOut();
       await localDataSource.clearCache();
-      
-      // Clear user session for web
-      await SharedPreferencesHelper.clearUserSession();
-      
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
@@ -105,12 +89,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, AppUser>> getCurrentUser() async {
     try {
-      // First, check if user session is saved (for web persistence)
-      final isLoggedIn = await SharedPreferencesHelper.getIsLoggedInAsync();
-      if (!isLoggedIn) {
-        return Left(AuthenticationFailure(message: 'User not logged in'));
-      }
-      
       if (await networkInfo.isConnected) {
         // Try to get from remote first
         try {
@@ -119,54 +97,18 @@ class AuthRepositoryImpl implements AuthRepository {
           return Right(_userModelToAppUser(userModel));
         } on ServerException {
           // If remote fails, try local cache
-          try {
-            final cachedUser = await localDataSource.getCachedUser();
-            return Right(_userModelToAppUser(cachedUser));
-          } on CacheException {
-            // If cache also fails, try to create user from saved session data
-            final userData = await SharedPreferencesHelper.getSavedUserData();
-            if (userData['email'] != null && userData['name'] != null && userData['role'] != null) {
-              final appUser = AppUser(
-                id: userData['email']!,
-                email: userData['email']!,
-                name: userData['name']!,
-                role: userData['role']!,
-                team: userData['team'] ?? '',
-                isAuthenticated: true,
-              );
-              return Right(appUser);
-            }
-            throw CacheException(message: 'No user data available');
-          }
+          final cachedUser = await localDataSource.getCachedUser();
+          return Right(_userModelToAppUser(cachedUser));
         }
       } else {
         // No internet, get from cache
-        try {
-          final cachedUser = await localDataSource.getCachedUser();
-          return Right(_userModelToAppUser(cachedUser));
-        } on CacheException {
-          // If cache fails, try to create user from saved session data
-          final userData = await SharedPreferencesHelper.getSavedUserData();
-          if (userData['email'] != null && userData['name'] != null && userData['role'] != null) {
-            final appUser = AppUser(
-              id: userData['email']!,
-              email: userData['email']!,
-              name: userData['name']!,
-              role: userData['role']!,
-              team: userData['team'] ?? '',
-              isAuthenticated: true,
-            );
-            return Right(appUser);
-          }
-          throw CacheException(message: 'No user data available offline');
-        }
+        final cachedUser = await localDataSource.getCachedUser();
+        return Right(_userModelToAppUser(cachedUser));
       }
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
-    } on AuthenticationException catch (e) {
-      return Left(AuthenticationFailure(message: e.message));
     } catch (e) {
       return Left(ServerFailure(message: 'Failed to get current user: $e'));
     }
