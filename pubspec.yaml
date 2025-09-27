@@ -1,0 +1,83 @@
+name: complaints
+description: "A mobile application for managing logistics complaints and tasks with role-based access (Employees & Managers) and Firebase as backend."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.5
+  
+  # Dependency Injection
+  get_it: ^7.7.0
+  
+  # HTTP & API
+  http: ^1.2.1
+  dio: ^5.4.3+1
+  
+  # Firebase
+  firebase_core: ^2.31.1
+  firebase_auth: ^4.19.6
+  cloud_firestore: ^4.17.4
+  firebase_storage: ^11.7.6
+  firebase_messaging: ^14.9.4
+  
+  # Local Notifications
+  flutter_local_notifications: ^17.2.2
+  
+  # Local Storage
+  shared_preferences: ^2.2.3
+  
+  # Image Handling
+  image_picker: ^1.1.2
+  cached_network_image: ^3.3.1
+  
+  # Date & Time
+  intl: ^0.19.0
+  
+  # Form Validation
+  formz: ^0.6.1
+  
+  # Network Info
+  connectivity_plus: ^6.0.3
+  
+  # UI & Utils
+  flutter_spinkit: ^5.2.1
+  permission_handler: ^11.3.1
+  
+  # Charts for Analytics
+  fl_chart: ^0.68.0
+  
+  # Functional Programming
+  dartz: ^0.10.1
+  cloudinary_public: ^0.23.1
+  crypto: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  bloc_test: ^9.1.7
+  mockito: ^5.4.4
+  build_runner: ^2.4.9
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icon/
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "assets/icon/app_icon_background.png" # Android adaptive background
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"

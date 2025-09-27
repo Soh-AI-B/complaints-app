@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "737561395502",
+    "project_id": "complaints-712af",
+    "storage_bucket": "complaints-712af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737561395502:android:4d198d5dad24a4937bbabf",
+        "android_client_info": {
+          "package_name": "com.example.complaints"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVZBBKj8r8nJhT057NiagWiyybXKEA8uA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
