@@ -473,7 +473,7 @@ A: Yes, the app works offline and syncs when connection is restored.
 
 <div align="center">
 
-**Made with ❤️ by [Your Team Name]**
+**Made with ❤️ by BeNext**
 
 [![GitHub stars](https://img.shields.io/github/stars/yourusername/complaints-manager.svg)](https://github.com/yourusername/complaints-manager/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/yourusername/complaints-manager.svg)](https://github.com/yourusername/complaints-manager/network)
