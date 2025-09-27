@@ -451,9 +451,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Getting Help
 
-- 📧 Email: [your-email@domain.com](mailto:your-email@domain.com)
-- 💬 GitHub Issues: [Create an issue](https://github.com/yourusername/complaints-manager/issues)
-- 📖 Documentation: [Wiki](https://github.com/yourusername/complaints-manager/wiki)
+- 📧 Email: [benext2025@gmail.com](mailto:benext2025@gmail.com)
+- 💬 GitHub Issues: [Create an issue](https://github.com/sohaib20030720/complaints-app/issues)
+- 📖 Documentation: [Wiki](https://github.com/sohaib20030720/complaints-app/wiki)
 
 ### Frequently Asked Questions
 
