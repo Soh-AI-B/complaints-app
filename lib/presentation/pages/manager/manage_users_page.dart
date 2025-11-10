@@ -356,7 +356,9 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
     }
 
     String selectedRole = user.role;
-    List<String> selectedCategories = List<String>.from(user.managedCategories ?? []);
+    List<String> selectedCategories = List<String>.from(
+      user.managedCategories ?? [],
+    );
 
     showDialog(
       context: context,

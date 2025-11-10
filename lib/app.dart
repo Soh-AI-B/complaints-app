@@ -4,6 +4,7 @@ import 'core/routes/route_generator.dart';
 import 'core/routes/app_routes.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/strings.dart';
+import 'core/services/navigation_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'injection_container.dart' as di;
 
@@ -18,6 +19,7 @@ class ComplaintsApp extends StatelessWidget {
         title: AppStrings.appName,
         debugShowCheckedModeBanner: false,
         theme: _buildTheme(),
+        navigatorKey: NavigationService.navigatorKey,
         initialRoute: AppRoutes.splash,
         onGenerateRoute: RouteGenerator.generateRoute,
       ),

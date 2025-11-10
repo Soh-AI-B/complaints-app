@@ -77,34 +77,31 @@ module.exports = async (req, res) => {
       category,
       employeeName,
       click_action: 'FLUTTER_NOTIFICATION_CLICK',
+      // CRITICAL: Include title and body in data payload for custom handling
+      title,
+      body,
     };
 
-    // Prepare the message template - HYBRID APPROACH for reliability
+    // Prepare the message template - DATA-ONLY APPROACH for background/terminated delivery
+    // DO NOT include 'notification' payload - this ensures our background handler is called
     const messageTemplate = {
-      // Include notification payload for reliable delivery
-      notification: {
-        title,
-        body,
-      },
-      data: {
-        ...data,
-        // Also include title and body in data for Flutter handling
-        title,
-        body,
-      },
+      // NO notification payload! This forces Firebase to call our background handler
+      data,
       android: {
         priority: 'high',
-        notification: {
-          sound: 'default',
-          channelId: 'default',
-        },
+        // No notification settings here - we'll create notification in Flutter
       },
       apns: {
         payload: {
           aps: {
+            'content-available': 1, // Silent notification for iOS background
             sound: 'default',
             badge: 1,
           },
+        },
+        // For iOS, we need to include notification in APNS but not in root
+        headers: {
+          'apns-priority': '10',
         },
       },
     };

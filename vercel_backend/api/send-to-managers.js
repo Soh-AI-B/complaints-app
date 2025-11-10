@@ -67,30 +67,25 @@ module.exports = async (req, res) => {
       body: notificationBody,
     };
 
-    // Prepare message template - ONLY DATA, NO NOTIFICATION PAYLOAD
-    // This prevents Android from auto-showing notifications (avoiding duplicates)
+    // Prepare message template - DATA-ONLY for background/terminated delivery
+    // NO notification payload! This ensures our background handler is called
     const messageTemplate = {
-      // Remove the notification payload to prevent duplicate notifications
-      // notification: {
-      //   title: notificationTitle,
-      //   body: notificationBody,
-      // },
+      // DO NOT include notification payload - this forces custom handling
       data: notificationData,
       android: {
         priority: 'high',
-        // Remove notification config to prevent auto-display
-        // notification: {
-        //   sound: 'default',
-        //   channelId: 'default',
-        // },
+        // No notification settings - we create notification in Flutter
       },
       apns: {
         payload: {
           aps: {
+            'content-available': 1, // Silent notification for iOS background
             sound: 'default',
             badge: 1,
-            'content-available': 1, // This ensures data-only message delivery
           },
+        },
+        headers: {
+          'apns-priority': '10',
         },
       },
     };

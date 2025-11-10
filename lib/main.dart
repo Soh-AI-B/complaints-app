@@ -1,37 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'app.dart';
 import 'injection_container.dart' as di;
 import 'core/services/fcm_service.dart';
 import 'core/services/local_notification_service.dart';
 
+// Background message handler - must be registered before Firebase initialization
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  await firebaseMessagingBackgroundHandler(message);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase with error handling
+  // Register background message handler BEFORE Firebase initialization
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Initialize Firebase
   bool firebaseInitialized = false;
   try {
     await Firebase.initializeApp();
     firebaseInitialized = true;
-    print('Firebase initialized successfully');
 
     // Request notification permissions
     await _requestNotificationPermissions();
 
-    // Initialize local notifications FIRST
+    // Initialize local notifications
     await LocalNotificationService.initialize();
-    print('Local notifications initialized successfully');
 
     // Initialize FCM service
     await FCMService.initialize();
-    print('FCM initialized successfully');
   } catch (e) {
-    print('Firebase initialization failed: $e');
-    print('App will run without Firebase features');
+    debugPrint('Firebase initialization failed: $e');
   }
 
-  // Initialize dependency injection with Firebase status
+  // Initialize dependency injection
   await di.init(firebaseAvailable: firebaseInitialized);
 
   runApp(const ComplaintsApp());
@@ -39,18 +46,8 @@ void main() async {
 
 Future<void> _requestNotificationPermissions() async {
   try {
-    // Request notification permission
-    PermissionStatus status = await Permission.notification.request();
-    print('Notification permission status: $status');
-
-    if (status.isGranted) {
-      print('Notification permission granted');
-    } else if (status.isDenied) {
-      print('Notification permission denied');
-    } else if (status.isPermanentlyDenied) {
-      print('Notification permission permanently denied');
-    }
+    await Permission.notification.request();
   } catch (e) {
-    print('Error requesting notification permissions: $e');
+    debugPrint('Error requesting notification permissions: $e');
   }
 }

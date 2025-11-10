@@ -13,9 +13,8 @@ class NotificationChannelService {
 
     try {
       await _channel.invokeMethod('createNotificationChannels');
-      print('NotificationChannelService: Channels created successfully');
     } catch (e) {
-      print('NotificationChannelService: Failed to create channels: $e');
+      debugPrint('Failed to create notification channels: $e');
     }
   }
 
@@ -37,11 +36,8 @@ class NotificationChannelService {
         'channelDescription': channelDescription,
         'importance': importance,
       });
-      print('NotificationChannelService: Channel $channelId created');
     } catch (e) {
-      print(
-        'NotificationChannelService: Failed to create channel $channelId: $e',
-      );
+      debugPrint('Failed to create channel $channelId: $e');
     }
   }
 }

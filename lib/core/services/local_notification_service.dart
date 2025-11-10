@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../routes/app_routes.dart';
+import 'navigation_service.dart';
 
 class LocalNotificationService {
   static final FlutterLocalNotificationsPlugin
@@ -13,8 +15,6 @@ class LocalNotificationService {
   // Initialize local notifications
   static Future<void> initialize() async {
     if (_initialized) return;
-
-    print('🔔 LocalNotificationService: Initializing...');
 
     // Request notification permissions first
     await _requestPermissions();
@@ -48,19 +48,23 @@ class LocalNotificationService {
     await _createNotificationChannels();
 
     _initialized = true;
-    print('🔔 LocalNotificationService: Initialized successfully');
   }
 
   // Request notification permissions
   static Future<void> _requestPermissions() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      // Request notification permission for Android 13+
-      final PermissionStatus status = await Permission.notification.request();
-      print('🔔 Notification permission status: $status');
+      try {
+        // Request notification permission for Android 13+
+        await Permission.notification.request();
 
-      // Request exact alarm permission for scheduled notifications
-      if (await Permission.scheduleExactAlarm.isDenied) {
-        await Permission.scheduleExactAlarm.request();
+        // Request exact alarm permission for scheduled notifications
+        if (await Permission.scheduleExactAlarm.isDenied) {
+          await Permission.scheduleExactAlarm.request();
+        }
+      } catch (e) {
+        // In background/terminated state, there's no Activity context
+        // This is expected - permissions should already be granted from foreground
+        // Continue silently
       }
     }
   }
@@ -122,24 +126,60 @@ class LocalNotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(updatesChannel);
-
-    print('🔔 Notification channels created');
   }
 
   // Handle notification tap
   static void _onNotificationTapped(NotificationResponse response) {
-    print('🔔 Notification tapped: ${response.payload}');
+    if (response.payload == null) return;
 
-    if (response.payload != null) {
-      try {
-        final Map<String, dynamic> data = json.decode(response.payload!);
-        print('🔔 Notification data: $data');
+    try {
+      final Map<String, dynamic> data = json.decode(response.payload!);
+      _handleNotificationNavigation(data);
+    } catch (e) {
+      debugPrint('Error parsing notification payload: $e');
+    }
+  }
 
-        // Handle navigation based on notification data
-        // You can implement navigation logic here
-      } catch (e) {
-        print('🔔 Error parsing notification payload: $e');
-      }
+  // Handle navigation based on notification data
+  static void _handleNotificationNavigation(Map<String, dynamic> data) {
+    final String? type = data['type'];
+    final String? taskId = data['taskId'];
+
+    switch (type) {
+      case 'new_task':
+      case 'task_update':
+      case 'urgent_task':
+        // Navigate to task detail page if taskId exists
+        if (taskId != null && taskId.isNotEmpty) {
+          _navigateToTaskDetail(taskId);
+        } else {
+          // If no taskId, go to notifications page
+          _navigateToNotifications();
+        }
+        break;
+
+      default:
+        // For other notification types, navigate to notifications page
+        _navigateToNotifications();
+        break;
+    }
+  }
+
+  // Navigate to task detail page
+  static void _navigateToTaskDetail(String taskId) {
+    try {
+      NavigationService.navigateTo(AppRoutes.taskDetail, arguments: taskId);
+    } catch (e) {
+      debugPrint('Error navigating to task detail: $e');
+    }
+  }
+
+  // Navigate to notifications page
+  static void _navigateToNotifications() {
+    try {
+      NavigationService.navigateTo(AppRoutes.notifications);
+    } catch (e) {
+      debugPrint('Error navigating to notifications: $e');
     }
   }
 
@@ -147,30 +187,20 @@ class LocalNotificationService {
   static Future<void> showNotificationFromFirebase(
     RemoteMessage message,
   ) async {
-    print('🔔 === showNotificationFromFirebase CALLED ===');
-    print('🔔 Initialized status: $_initialized');
-
     await initialize();
 
     final String channelId = _getChannelId(message.data);
 
-    // Get title and body from notification payload OR data payload
-    // Data payload takes priority (for data-only messages to avoid duplicates)
+    // Get title and body from data payload FIRST (for data-only messages)
+    // Fallback to notification payload if data fields are missing
     final String title =
-        message.data['title'] ??
+        message.data['title']?.toString() ??
         message.notification?.title ??
         'New Notification';
     final String body =
-        message.data['body'] ?? message.notification?.body ?? '';
-
-    print('🔔 === SHOWING LOCAL NOTIFICATION ===');
-    print('🔔 Channel: $channelId');
-    print('🔔 Title: $title');
-    print('🔔 Body: $body');
-    print('🔔 Data: ${message.data}');
-    print(
-      '🔔 Plugin initialized: ${_flutterLocalNotificationsPlugin.toString()}',
-    );
+        message.data['body']?.toString() ??
+        message.notification?.body ??
+        'You have a new notification';
 
     AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -205,9 +235,6 @@ class LocalNotificationService {
       100000,
     );
 
-    print('🔔 About to show notification with ID: $notificationId');
-    print('🔔 Notification details: title="$title", body="$body"');
-
     try {
       await _flutterLocalNotificationsPlugin.show(
         notificationId,
@@ -216,16 +243,9 @@ class LocalNotificationService {
         platformChannelSpecifics,
         payload: json.encode(message.data),
       );
-
-      print(
-        '🔔 ✅ Local notification displayed successfully with ID: $notificationId',
-      );
-      print(
-        '🔔 ✅ Notification should now appear in your device notification panel!',
-      );
     } catch (e) {
-      print('🔔 ❌ ERROR showing local notification: $e');
-      print('🔔 ❌ This might be a permission or initialization issue');
+      debugPrint('Error showing notification: $e');
+      rethrow;
     }
   }
 
@@ -295,8 +315,6 @@ class LocalNotificationService {
         'timestamp': DateTime.now().toIso8601String(),
       }),
     );
-
-    print('🔔 Test notification shown');
   }
 
   // Check if notifications are enabled
