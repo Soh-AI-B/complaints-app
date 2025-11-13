@@ -5,11 +5,50 @@ import 'core/routes/app_routes.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/strings.dart';
 import 'core/services/navigation_service.dart';
+import 'core/services/web_redirect_service.dart';
+import 'core/services/platform_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'injection_container.dart' as di;
 
-class ComplaintsApp extends StatelessWidget {
+class ComplaintsApp extends StatefulWidget {
   const ComplaintsApp({super.key});
+
+  @override
+  State<ComplaintsApp> createState() => _ComplaintsAppState();
+}
+
+class _ComplaintsAppState extends State<ComplaintsApp> {
+  bool _hasCheckedRedirect = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPlatformAndRedirect();
+  }
+
+  Future<void> _checkPlatformAndRedirect() async {
+    // Small delay to ensure context is available
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    if (mounted && !_hasCheckedRedirect) {
+      _hasCheckedRedirect = true;
+
+      // Check for device compatibility issues
+      final hasDeviceIssues =
+          await PlatformService.hasDeviceCompatibilityIssues();
+
+      // Check if redirect is needed
+      final shouldRedirect = await WebRedirectService.checkAndHandleRedirect(
+        context,
+        hasDeviceIssues: hasDeviceIssues,
+      );
+
+      if (shouldRedirect) {
+        // The redirect service will handle showing the dialog and redirecting
+        // The app will continue to run but users will be prompted to use web
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

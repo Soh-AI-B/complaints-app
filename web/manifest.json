@@ -1,12 +1,12 @@
 {
-    "name": "complaints",
-    "short_name": "complaints",
+    "name": "Complaints Management System",
+    "short_name": "Complaints",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#253b74",
+    "theme_color": "#253b74",
+    "description": "Logistics complaints and task management system for employees and managers.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

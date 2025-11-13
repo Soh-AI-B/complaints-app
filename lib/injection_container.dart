@@ -11,6 +11,8 @@ import 'core/services/cloudinary_service.dart';
 import 'core/services/task_cleanup_service.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/vercel_notification_service.dart';
+import 'core/services/platform_service.dart';
+import 'core/services/web_redirect_service.dart';
 
 // Data sources
 import 'data/datasources/auth/auth_remote_datasource.dart';

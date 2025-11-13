@@ -39,6 +39,8 @@ Complaints Manager is a modern, cross-platform Flutter application designed for 
 ### 🎯 Key Highlights
 
 - **Multi-Platform**: Runs on Android, iOS, and Web
+- **Smart Platform Routing**: Automatic web redirection for iOS users and users with device issues
+- **Responsive Web Design**: Optimized for desktop and mobile web browsers
 - **Role-Based Access**: Employee, Manager, and Admin roles with different permissions
 - **Real-Time Updates**: Live notifications and task status updates
 - **Category Management**: Organized complaint categories for better workflow
