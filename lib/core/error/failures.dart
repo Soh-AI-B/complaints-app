@@ -17,8 +17,8 @@ class ServerFailure extends Failure {
   final int? statusCode;
   final dynamic data;
 
-  const ServerFailure({required String message, this.statusCode, this.data})
-    : super(message: message, code: statusCode);
+  const ServerFailure({required super.message, this.statusCode, this.data})
+    : super(code: statusCode);
 
   @override
   List<Object?> get props => [message, statusCode, data];
@@ -26,20 +26,19 @@ class ServerFailure extends Failure {
 
 // Cache failure
 class CacheFailure extends Failure {
-  const CacheFailure({required String message}) : super(message: message);
+  const CacheFailure({required super.message});
 }
 
 // Network failure
 class NetworkFailure extends Failure {
-  const NetworkFailure({required String message}) : super(message: message);
+  const NetworkFailure({required super.message});
 }
 
 // Authentication failure
 class AuthenticationFailure extends Failure {
   final String? authCode;
 
-  const AuthenticationFailure({required String message, this.authCode})
-    : super(message: message);
+  const AuthenticationFailure({required super.message, this.authCode});
 
   @override
   List<Object?> get props => [message, authCode];
@@ -49,8 +48,7 @@ class AuthenticationFailure extends Failure {
 class ValidationFailure extends Failure {
   final Map<String, String>? fieldErrors;
 
-  const ValidationFailure({required String message, this.fieldErrors})
-    : super(message: message);
+  const ValidationFailure({required super.message, this.fieldErrors});
 
   @override
   List<Object?> get props => [message, fieldErrors];
@@ -60,8 +58,7 @@ class ValidationFailure extends Failure {
 class FileFailure extends Failure {
   final String? filePath;
 
-  const FileFailure({required String message, this.filePath})
-    : super(message: message);
+  const FileFailure({required super.message, this.filePath});
 
   @override
   List<Object?> get props => [message, filePath];
@@ -71,8 +68,7 @@ class FileFailure extends Failure {
 class PermissionFailure extends Failure {
   final String? permission;
 
-  const PermissionFailure({required String message, this.permission})
-    : super(message: message);
+  const PermissionFailure({required super.message, this.permission});
 
   @override
   List<Object?> get props => [message, permission];
@@ -82,8 +78,7 @@ class PermissionFailure extends Failure {
 class StorageFailure extends Failure {
   final String? storageCode;
 
-  const StorageFailure({required String message, this.storageCode})
-    : super(message: message);
+  const StorageFailure({required super.message, this.storageCode});
 
   @override
   List<Object?> get props => [message, storageCode];
@@ -93,8 +88,7 @@ class StorageFailure extends Failure {
 class TaskFailure extends Failure {
   final String? taskId;
 
-  const TaskFailure({required String message, this.taskId})
-    : super(message: message);
+  const TaskFailure({required super.message, this.taskId});
 
   @override
   List<Object?> get props => [message, taskId];
@@ -104,8 +98,7 @@ class TaskFailure extends Failure {
 class UserFailure extends Failure {
   final String? userId;
 
-  const UserFailure({required String message, this.userId})
-    : super(message: message);
+  const UserFailure({required super.message, this.userId});
 
   @override
   List<Object?> get props => [message, userId];
@@ -115,8 +108,7 @@ class UserFailure extends Failure {
 class DatabaseFailure extends Failure {
   final String? query;
 
-  const DatabaseFailure({required String message, this.query})
-    : super(message: message);
+  const DatabaseFailure({required super.message, this.query});
 
   @override
   List<Object?> get props => [message, query];
@@ -126,8 +118,7 @@ class DatabaseFailure extends Failure {
 class ConfigurationFailure extends Failure {
   final String? configuration;
 
-  const ConfigurationFailure({required String message, this.configuration})
-    : super(message: message);
+  const ConfigurationFailure({required super.message, this.configuration});
 
   @override
   List<Object?> get props => [message, configuration];
@@ -137,8 +128,7 @@ class ConfigurationFailure extends Failure {
 class TimeoutFailure extends Failure {
   final Duration? timeout;
 
-  const TimeoutFailure({required String message, this.timeout})
-    : super(message: message);
+  const TimeoutFailure({required super.message, this.timeout});
 
   @override
   List<Object?> get props => [message, timeout];
@@ -148,8 +138,7 @@ class TimeoutFailure extends Failure {
 class UnknownFailure extends Failure {
   final dynamic originalError;
 
-  const UnknownFailure({required String message, this.originalError})
-    : super(message: message);
+  const UnknownFailure({required super.message, this.originalError});
 
   @override
   List<Object?> get props => [message, originalError];
@@ -223,29 +212,28 @@ class FailureUtils {
 
   // Get user-friendly message
   static String getUserFriendlyMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case NetworkFailure:
+    switch (failure) {
+      case NetworkFailure _:
         return 'Please check your internet connection and try again.';
-      case AuthenticationFailure:
+      case AuthenticationFailure _:
         return 'Authentication failed. Please login again.';
-      case ValidationFailure:
+      case ValidationFailure _:
         return failure.message;
-      case FileFailure:
+      case FileFailure _:
         return 'File operation failed. Please try again.';
-      case PermissionFailure:
+      case PermissionFailure _:
         return 'Permission required. Please grant the necessary permissions.';
-      case StorageFailure:
+      case StorageFailure _:
         return 'Storage operation failed. Please try again.';
-      case TaskFailure:
+      case TaskFailure _:
         return 'Task operation failed. Please try again.';
-      case UserFailure:
+      case UserFailure _:
         return 'User operation failed. Please try again.';
-      case DatabaseFailure:
+      case DatabaseFailure _:
         return 'Database operation failed. Please try again.';
-      case TimeoutFailure:
+      case TimeoutFailure _:
         return 'Operation timed out. Please try again.';
-      case ServerFailure:
-        final serverFailure = failure as ServerFailure;
+      case ServerFailure serverFailure:
         if (serverFailure.statusCode != null) {
           switch (serverFailure.statusCode) {
             case 400:

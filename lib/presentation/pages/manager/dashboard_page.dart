@@ -417,7 +417,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
             ] else ...[
-              ...recentTasks.map((task) => _buildRecentTaskItem(task)).toList(),
+              ...recentTasks.map((task) => _buildRecentTaskItem(task)),
             ],
           ],
         ),
@@ -473,7 +473,9 @@ class _DashboardPageState extends State<DashboardPage> {
               vertical: 4,
             ),
             decoration: BoxDecoration(
-              color: AppColors.getStatusColor(task.status).withOpacity(0.1),
+              color: AppColors.getStatusColor(
+                task.status,
+              ).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
             ),
             child: Text(

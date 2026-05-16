@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/user_model.dart';
@@ -14,7 +15,7 @@ class AdminSetup {
       final firebaseAuth = FirebaseAuth.instance;
       final firestore = FirebaseFirestore.instance;
 
-      print('Creating admin user in Firebase Auth...');
+      developer.log('Creating admin user in Firebase Auth...');
       UserCredential? userCredential;
 
       try {
@@ -24,17 +25,19 @@ class AdminSetup {
         );
       } on FirebaseAuthException catch (e) {
         if (e.code == 'email-already-in-use') {
-          print('Admin email already exists in Firebase Auth');
-          print('Trying to sign in with existing credentials...');
+          developer.log('Admin email already exists in Firebase Auth');
+          developer.log('Trying to sign in with existing credentials...');
 
           try {
             userCredential = await firebaseAuth.signInWithEmailAndPassword(
               email: adminEmail,
               password: adminPassword,
             );
-            print('Successfully signed in with existing admin account');
+            developer.log('Successfully signed in with existing admin account');
           } catch (signInError) {
-            print('Could not sign in with admin credentials: $signInError');
+            developer.log(
+              'Could not sign in with admin credentials: $signInError',
+            );
             throw Exception(
               'Admin account exists but password might be different. '
               'Please check Firebase Authentication console or try logging in manually.',
@@ -49,7 +52,9 @@ class AdminSetup {
         throw Exception('Failed to create or authenticate admin user');
       }
 
-      print('Admin user authenticated with UID: ${userCredential.user!.uid}');
+      developer.log(
+        'Admin user authenticated with UID: ${userCredential.user!.uid}',
+      );
 
       // Now that we're authenticated, try to create/update the Firestore document
       try {
@@ -60,7 +65,7 @@ class AdminSetup {
             .get();
 
         if (existingDoc.exists) {
-          print('Admin user document already exists in Firestore');
+          developer.log('Admin user document already exists in Firestore');
 
           // Update to ensure it has admin role
           await firestore
@@ -68,7 +73,7 @@ class AdminSetup {
               .doc(userCredential.user!.uid)
               .update({'role': 'Admin'});
 
-          print('Ensured admin user has Admin role');
+          developer.log('Ensured admin user has Admin role');
           return;
         }
 
@@ -88,13 +93,13 @@ class AdminSetup {
             .doc(userCredential.user!.uid)
             .set(adminUser.toFirestore(), SetOptions(merge: true));
 
-        print('Initial admin user created successfully');
-        print('Email: $adminEmail');
-        print('Password: $adminPassword');
-        print('UID: ${userCredential.user!.uid}');
-        print('You can now login with these credentials');
+        developer.log('Initial admin user created successfully');
+        developer.log('Email: $adminEmail');
+        developer.log('Password: $adminPassword');
+        developer.log('UID: ${userCredential.user!.uid}');
+        developer.log('You can now login with these credentials');
       } catch (firestoreError) {
-        print('Firestore operation failed: $firestoreError');
+        developer.log('Firestore operation failed: $firestoreError');
 
         if (firestoreError.toString().contains('permission-denied')) {
           throw Exception(
@@ -106,7 +111,7 @@ class AdminSetup {
         }
       }
     } catch (e) {
-      print('Error creating admin user: $e');
+      developer.log('Error creating admin user: $e');
       rethrow;
     }
   }
@@ -128,9 +133,9 @@ class AdminSetup {
       final userDoc = userQuery.docs.first;
       await userDoc.reference.update({'role': 'Admin'});
 
-      print('User $userEmail promoted to Admin successfully');
+      developer.log('User $userEmail promoted to Admin successfully');
     } catch (e) {
-      print('Error promoting user to admin: $e');
+      developer.log('Error promoting user to admin: $e');
     }
   }
 }

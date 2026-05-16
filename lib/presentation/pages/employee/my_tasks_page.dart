@@ -9,6 +9,7 @@ import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
 import '../../widgets/tasks/task_card.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/dimensions.dart';
 import '../../../core/routes/app_routes.dart';
@@ -28,9 +29,9 @@ class _MyTasksPageState extends State<MyTasksPage>
   String _selectedPriority = 'All';
 
   final List<String> _statusOptions = [
-    'All',
     'Pending',
     'In Progress',
+    'All',
     'Completed',
     'Cancelled',
   ];
@@ -86,6 +87,14 @@ class _MyTasksPageState extends State<MyTasksPage>
           .toList();
     }
 
+    filteredTasks.sort((a, b) {
+      final aDone = a.status == 'Completed' || a.status == 'Cancelled';
+      final bDone = b.status == 'Completed' || b.status == 'Cancelled';
+      if (aDone != bDone) return aDone ? 1 : -1;
+      if (a.isUrgent != b.isUrgent) return a.isUrgent ? -1 : 1;
+      return b.dateReported.compareTo(a.dateReported);
+    });
+
     return filteredTasks;
   }
 
@@ -103,6 +112,9 @@ class _MyTasksPageState extends State<MyTasksPage>
           IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshTasks),
         ],
       ),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.myTasks,
+      ),
       body: Column(
         children: [
           // Tab Bar
@@ -115,9 +127,9 @@ class _MyTasksPageState extends State<MyTasksPage>
               unselectedLabelColor: AppColors.textSecondary,
               indicatorColor: AppColors.primary,
               tabs: const [
-                Tab(text: 'All'),
                 Tab(text: 'Pending'),
                 Tab(text: 'In Progress'),
+                Tab(text: 'All'),
                 Tab(text: 'Completed'),
               ],
             ),
@@ -147,11 +159,11 @@ class _MyTasksPageState extends State<MyTasksPage>
                     return TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildTaskList(_filterTasks(state.tasks, 'All')),
                         _buildTaskList(_filterTasks(state.tasks, 'Pending')),
                         _buildTaskList(
                           _filterTasks(state.tasks, 'In Progress'),
                         ),
+                        _buildTaskList(_filterTasks(state.tasks, 'All')),
                         _buildTaskList(_filterTasks(state.tasks, 'Completed')),
                       ],
                     );
@@ -226,6 +238,13 @@ class _MyTasksPageState extends State<MyTasksPage>
                       _refreshTasks();
                     });
               },
+              onStatusChanged: task.isCompleted
+                  ? null
+                  : (newStatus) {
+                      context.read<TaskBloc>().add(
+                        UpdateTask(taskId: task.taskId, status: newStatus),
+                      );
+                    },
             ),
           );
         },
@@ -293,7 +312,7 @@ class _MyTasksPageState extends State<MyTasksPage>
                           });
                         },
                         backgroundColor: AppColors.surface,
-                        selectedColor: AppColors.primary.withOpacity(0.2),
+                        selectedColor: AppColors.primary.withValues(alpha: 0.2),
                         checkmarkColor: AppColors.primary,
                       );
                     }).toList(),
@@ -322,7 +341,7 @@ class _MyTasksPageState extends State<MyTasksPage>
                           });
                         },
                         backgroundColor: AppColors.surface,
-                        selectedColor: AppColors.primary.withOpacity(0.2),
+                        selectedColor: AppColors.primary.withValues(alpha: 0.2),
                         checkmarkColor: AppColors.primary,
                       );
                     }).toList(),

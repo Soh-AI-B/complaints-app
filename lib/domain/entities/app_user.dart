@@ -131,7 +131,7 @@ class AppUser extends Equatable {
   bool get hasPhone => phone != null && phone!.isNotEmpty;
 
   // Check if user has team
-  bool get hasTeam => team != null && team!.isNotEmpty;
+  bool get hasTeam => team.isNotEmpty;
 
   // Check if user has authentication token
   bool get hasAuthToken => authToken != null && authToken!.isNotEmpty;

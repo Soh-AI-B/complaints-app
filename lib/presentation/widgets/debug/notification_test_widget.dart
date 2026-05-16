@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import '../../../core/services/vercel_notification_service.dart';
 import '../../../core/services/local_notification_service.dart';
@@ -15,13 +16,15 @@ class NotificationTestWidget extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
-                print('🧪 Testing Vercel Backend Connection...');
+                developer.log('🧪 Testing Vercel Backend Connection...');
                 final service = VercelNotificationService();
                 final result = await service.testConnection();
 
                 result.fold(
                   (failure) {
-                    print('❌ Connection test failed: ${failure.message}');
+                    developer.log(
+                      '❌ Connection test failed: ${failure.message}',
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -31,7 +34,7 @@ class NotificationTestWidget extends StatelessWidget {
                     );
                   },
                   (data) {
-                    print('✅ Connection test successful: $data');
+                    developer.log('✅ Connection test successful: $data');
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('✅ Backend connection OK')),
                     );
@@ -43,7 +46,7 @@ class NotificationTestWidget extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
-                print('🧪 Testing Topic-based Notification...');
+                developer.log('🧪 Testing Topic-based Notification...');
                 final service = VercelNotificationService();
                 final result = await service.sendNewTaskNotification(
                   taskId: 'test-task-123',
@@ -55,7 +58,9 @@ class NotificationTestWidget extends StatelessWidget {
 
                 result.fold(
                   (failure) {
-                    print('❌ Topic notification failed: ${failure.message}');
+                    developer.log(
+                      '❌ Topic notification failed: ${failure.message}',
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -65,7 +70,7 @@ class NotificationTestWidget extends StatelessWidget {
                     );
                   },
                   (_) {
-                    print('✅ Topic notification sent successfully');
+                    developer.log('✅ Topic notification sent successfully');
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('✅ Topic notification sent'),
@@ -79,15 +84,17 @@ class NotificationTestWidget extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
-                print('🧪 Testing Manual Local Notification...');
+                developer.log('🧪 Testing Manual Local Notification...');
                 try {
                   // Import and use LocalNotificationService
                   await LocalNotificationService.showTestNotification();
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('✅ Local notification shown')),
                   );
                 } catch (e) {
-                  print('❌ Local notification error: $e');
+                  developer.log('❌ Local notification error: $e');
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('❌ Local notification error: $e')),
                   );

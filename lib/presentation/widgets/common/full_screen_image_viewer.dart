@@ -53,13 +53,13 @@ class FullScreenImageViewer extends StatelessWidget {
                     Icon(
                       Icons.broken_image,
                       size: 80,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Failed to load image',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 16,
                       ),
                     ),

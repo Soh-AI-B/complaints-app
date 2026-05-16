@@ -23,7 +23,7 @@ class NotificationBadge extends StatelessWidget {
         if (count > 0)
           Positioned(
             right: -1,
-           
+
             child: Container(
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(

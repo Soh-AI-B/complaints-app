@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/colors.dart';
@@ -29,21 +30,23 @@ class _SplashPageState extends State<SplashPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            print(
+            developer.log(
               'DEBUG SPLASH: User authenticated with role: ${state.user.role}',
             );
             // Navigate based on user role
             if (state.user.role == 'Manager' || state.user.role == 'Admin') {
-              print('DEBUG SPLASH: Navigating to manager home');
+              developer.log('DEBUG SPLASH: Navigating to manager home');
               Navigator.of(context).pushReplacementNamed(AppRoutes.managerHome);
             } else {
-              print('DEBUG SPLASH: Navigating to employee home');
+              developer.log('DEBUG SPLASH: Navigating to employee home');
               Navigator.of(
                 context,
               ).pushReplacementNamed(AppRoutes.employeeHome);
             }
           } else if (state is AuthUnauthenticated || state is AuthError) {
-            print('DEBUG SPLASH: User not authenticated, navigating to login');
+            developer.log(
+              'DEBUG SPLASH: User not authenticated, navigating to login',
+            );
             // Navigate to login
             Navigator.of(context).pushReplacementNamed(AppRoutes.login);
           }
@@ -58,7 +61,6 @@ class _SplashPageState extends State<SplashPage> {
                 fit: BoxFit.cover,
                 width: 120,
                 height: 90,
-
               ),
               const SizedBox(height: 24),
 

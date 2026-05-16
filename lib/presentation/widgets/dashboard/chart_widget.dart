@@ -20,7 +20,7 @@ class ChartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: height,
       child: Column(
         children: [
@@ -240,7 +240,7 @@ class PieChartPainter extends CustomPainter {
 
     double startAngle = -90 * (3.14159 / 180); // Start from top
 
-    data.entries.forEach((entry) {
+    for (final entry in data.entries) {
       final index = data.keys.toList().indexOf(entry.key);
       final sweepAngle = (entry.value / total) * 2 * 3.14159;
 
@@ -257,7 +257,7 @@ class PieChartPainter extends CustomPainter {
       );
 
       startAngle += sweepAngle;
-    });
+    }
   }
 
   @override

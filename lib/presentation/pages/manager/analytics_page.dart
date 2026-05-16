@@ -5,10 +5,12 @@ import '../../blocs/tasks/task_event.dart';
 import '../../blocs/tasks/task_state.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../widgets/dashboard/chart_widget.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/dimensions.dart';
 import '../../../domain/entities/task.dart';
+import '../../../core/routes/app_routes.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
@@ -57,6 +59,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
         ],
+      ),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.analytics,
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -317,9 +322,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -374,7 +379,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                       child: Text(
                         employee['name']!.substring(0, 1).toUpperCase(),
                         style: TextStyle(
@@ -407,7 +412,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
+                        color: AppColors.success.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusS,
                         ),
@@ -423,7 +428,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:dartz/dartz.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/error/exceptions.dart';
@@ -397,10 +398,12 @@ class NotificationRepositoryImpl implements NotificationRepository {
     required Map<String, dynamic> data,
   }) async {
     try {
-      print('🔔 🚀 Starting TOKEN-BASED push notification for task: $taskId');
-      print('🔔 Title: $title');
-      print('🔔 Message: $message');
-      print('🔔 Data: $data');
+      developer.log(
+        '🔔 🚀 Starting TOKEN-BASED push notification for task: $taskId',
+      );
+      developer.log('🔔 Title: $title');
+      developer.log('🔔 Message: $message');
+      developer.log('🔔 Data: $data');
 
       final taskTitle =
           data['taskTitle'] as String? ?? title; // Use title as fallback
@@ -409,18 +412,18 @@ class NotificationRepositoryImpl implements NotificationRepository {
       final priority = data['priority'] as String? ?? 'Normal';
       final category = data['category'] as String? ?? 'General';
 
-      print('🔔 Extracted values:');
-      print('🔔 - taskTitle: $taskTitle');
-      print('🔔 - employeeName: $employeeName');
-      print('🔔 - priority: $priority');
-      print('🔔 - category: $category');
+      developer.log('🔔 Extracted values:');
+      developer.log('🔔 - taskTitle: $taskTitle');
+      developer.log('🔔 - employeeName: $employeeName');
+      developer.log('🔔 - priority: $priority');
+      developer.log('🔔 - category: $category');
 
       // 🎯 PRIMARY APPROACH: TOKEN-BASED (PROVEN TO WORK)
-      print('🔔 🎯 Getting manager and admin FCM tokens...');
+      developer.log('🔔 🎯 Getting manager and admin FCM tokens...');
       final managerTokens = await _getManagerAndAdminTokens();
 
       if (managerTokens.isNotEmpty) {
-        print('🔔 Found ${managerTokens.length} manager/admin tokens');
+        developer.log('🔔 Found ${managerTokens.length} manager/admin tokens');
 
         final vercelService = VercelNotificationService();
         final tokenResult = await vercelService.sendNotificationToManagers(
@@ -433,14 +436,15 @@ class NotificationRepositoryImpl implements NotificationRepository {
         );
 
         tokenResult.fold(
-          (failure) =>
-              print('🔔 ❌ Token-based notification failed: ${failure.message}'),
-          (_) => print(
+          (failure) => developer.log(
+            '🔔 ❌ Token-based notification failed: ${failure.message}',
+          ),
+          (_) => developer.log(
             '🔔 ✅ Token-based notification sent to ${managerTokens.length} managers!',
           ),
         );
       } else {
-        print(
+        developer.log(
           '🔔 ⚠️ No manager/admin tokens found - falling back to topic-based approach',
         );
 
@@ -455,16 +459,19 @@ class NotificationRepositoryImpl implements NotificationRepository {
         );
 
         topicResult.fold(
-          (failure) =>
-              print('🔔 ❌ Topic-based fallback failed: ${failure.message}'),
-          (_) => print('🔔 ✅ Topic-based fallback sent successfully!'),
+          (failure) => developer.log(
+            '🔔 ❌ Topic-based fallback failed: ${failure.message}',
+          ),
+          (_) => developer.log('🔔 ✅ Topic-based fallback sent successfully!'),
         );
       }
 
-      print('🔔 🎉 Push notification process completed for task: $taskId');
+      developer.log(
+        '🔔 🎉 Push notification process completed for task: $taskId',
+      );
     } catch (e) {
       // Log error but don't fail the notification creation
-      print('🔔 ❌ Exception in push notification: $e');
+      developer.log('🔔 ❌ Exception in push notification: $e');
     }
   }
 
@@ -473,7 +480,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
     try {
       final tokens = <String>[];
 
-      print(
+      developer.log(
         '🔔 🔍 DEBUG: Querying users collection for Manager/Admin roles...',
       );
 
@@ -483,37 +490,39 @@ class NotificationRepositoryImpl implements NotificationRepository {
           .where('role', whereIn: ['Manager', 'Admin'])
           .get();
 
-      print(
+      developer.log(
         '🔔 🔍 DEBUG: Found ${userQuery.docs.length} users with Manager/Admin role',
       );
 
       for (final doc in userQuery.docs) {
         final userData = doc.data();
-        print('🔔 🔍 DEBUG: Processing user: ${doc.id}');
-        print('🔔 🔍 DEBUG: User data: $userData');
+        developer.log('🔔 🔍 DEBUG: Processing user: ${doc.id}');
+        developer.log('🔔 🔍 DEBUG: User data: $userData');
 
         final userTokens = userData['fcmTokens'] as List<dynamic>?;
-        print('🔔 🔍 DEBUG: FCM tokens for ${doc.id}: $userTokens');
+        developer.log('🔔 🔍 DEBUG: FCM tokens for ${doc.id}: $userTokens');
 
         if (userTokens != null && userTokens.isNotEmpty) {
           // Add all valid tokens for this user
           for (final token in userTokens) {
             if (token is String && token.isNotEmpty) {
               tokens.add(token);
-              print('🔔 🔍 DEBUG: Added token: ${token.substring(0, 20)}...');
+              developer.log(
+                '🔔 🔍 DEBUG: Added token: ${token.substring(0, 20)}...',
+              );
             }
           }
         } else {
-          print('🔔 🔍 DEBUG: No FCM tokens found for user ${doc.id}');
+          developer.log('🔔 🔍 DEBUG: No FCM tokens found for user ${doc.id}');
         }
       }
 
-      print(
+      developer.log(
         '🔔 🔍 DEBUG: FINAL RESULT - Retrieved ${tokens.length} FCM tokens from ${userQuery.docs.length} manager/admin users',
       );
       return tokens;
     } catch (e) {
-      print('🔔 ❌ Error getting manager/admin tokens: $e');
+      developer.log('🔔 ❌ Error getting manager/admin tokens: $e');
       return [];
     }
   }

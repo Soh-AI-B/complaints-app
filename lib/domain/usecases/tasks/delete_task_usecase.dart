@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:dartz/dartz.dart';
 import '../../../core/error/failures.dart';
 import '../../repositories/task_repository.dart';
@@ -21,12 +22,12 @@ class DeleteTaskUseCase {
     required String taskId,
     required String userRole,
   }) async {
-    print('🗑️ DeleteTaskUseCase: Starting deletion for task: $taskId');
-    print('🗑️ User role: $userRole');
+    developer.log('🗑️ DeleteTaskUseCase: Starting deletion for task: $taskId');
+    developer.log('🗑️ User role: $userRole');
 
     // Verify user has permission to delete tasks
     if (!_canDeleteTasks(userRole)) {
-      print('🗑️ ❌ User does not have permission to delete tasks');
+      developer.log('🗑️ ❌ User does not have permission to delete tasks');
       return const Left(
         AuthorizationFailure(
           message: 'Only managers and admins can delete tasks',
@@ -41,7 +42,7 @@ class DeleteTaskUseCase {
       List<String> imageUrls = [];
       taskResult.fold(
         (failure) {
-          print(
+          developer.log(
             '🗑️ ⚠️ Could not retrieve task details for cleanup: ${failure.message}',
           );
           // Continue with deletion even if we can't get task details
@@ -49,47 +50,49 @@ class DeleteTaskUseCase {
         (task) {
           imageUrls =
               task.allImageUrls; // Get all images (both old and new format)
-          print('🗑️ Task has ${imageUrls.length} images to clean up');
+          developer.log('🗑️ Task has ${imageUrls.length} images to clean up');
         },
       );
 
       // Delete the task from Firestore
-      print('🗑️ Deleting task from database...');
+      developer.log('🗑️ Deleting task from database...');
       final deleteResult = await repository.deleteTask(taskId);
 
       return deleteResult.fold(
         (failure) {
-          print('🗑️ ❌ Failed to delete task: ${failure.message}');
+          developer.log('🗑️ ❌ Failed to delete task: ${failure.message}');
           return Left(failure);
         },
         (_) async {
-          print('🗑️ ✅ Task deleted from database successfully');
+          developer.log('🗑️ ✅ Task deleted from database successfully');
 
           // Clean up related notifications
-          print('🗑️ 🔔 Deleting related notifications...');
+          developer.log('🗑️ 🔔 Deleting related notifications...');
           final notificationResult = await notificationRepository
               .deleteNotificationsByTaskId(taskId);
           notificationResult.fold(
-            (failure) => print(
+            (failure) => developer.log(
               '🗑️ ⚠️ Failed to delete notifications: ${failure.message}',
             ),
-            (_) => print('🗑️ ✅ Related notifications deleted successfully'),
+            (_) => developer.log(
+              '🗑️ ✅ Related notifications deleted successfully',
+            ),
           );
 
           // Clean up all associated images from Cloudinary
           if (imageUrls.isNotEmpty) {
-            print('🗑️ 🖼️ Cleaning up ${imageUrls.length} images...');
+            developer.log('🗑️ 🖼️ Cleaning up ${imageUrls.length} images...');
             for (final imageUrl in imageUrls) {
               await _cleanupTaskImage(imageUrl);
             }
           }
 
-          print('🗑️ ✅ Task deletion completed successfully');
+          developer.log('🗑️ ✅ Task deletion completed successfully');
           return const Right(null);
         },
       );
     } catch (e) {
-      print('🗑️ ❌ Unexpected error during task deletion: $e');
+      developer.log('🗑️ ❌ Unexpected error during task deletion: $e');
       return Left(ServerFailure(message: 'Failed to delete task: $e'));
     }
   }
@@ -102,25 +105,27 @@ class DeleteTaskUseCase {
   /// Clean up task image from Cloudinary storage
   Future<void> _cleanupTaskImage(String imageUrl) async {
     try {
-      print('🗑️ 🖼️ Starting image cleanup for: $imageUrl');
+      developer.log('🗑️ 🖼️ Starting image cleanup for: $imageUrl');
 
       if (imageUrl.contains('cloudinary.com')) {
         final publicId = cloudinaryService.extractPublicId(imageUrl);
-        print('🗑️ 🖼️ Extracted public ID: $publicId');
+        developer.log('🗑️ 🖼️ Extracted public ID: $publicId');
 
         final success = await cloudinaryService.deleteImage(publicId);
         if (success) {
-          print('🗑️ 🖼️ ✅ Image deleted from Cloudinary successfully');
+          developer.log('🗑️ 🖼️ ✅ Image deleted from Cloudinary successfully');
         } else {
-          print(
+          developer.log(
             '🗑️ 🖼️ ⚠️ Image deletion from Cloudinary failed (but task was deleted)',
           );
         }
       } else {
-        print('🗑️ 🖼️ ⚠️ Image URL is not from Cloudinary, skipping cleanup');
+        developer.log(
+          '🗑️ 🖼️ ⚠️ Image URL is not from Cloudinary, skipping cleanup',
+        );
       }
     } catch (e) {
-      print('🗑️ 🖼️ ❌ Error cleaning up image: $e');
+      developer.log('🗑️ 🖼️ ❌ Error cleaning up image: $e');
       // Don't fail the entire operation if image cleanup fails
     }
   }
@@ -128,6 +133,5 @@ class DeleteTaskUseCase {
 
 /// Authorization failure specific to permissions
 class AuthorizationFailure extends Failure {
-  const AuthorizationFailure({required String message})
-    : super(message: message);
+  const AuthorizationFailure({required super.message});
 }

@@ -8,6 +8,7 @@ import '../../blocs/tasks/task_bloc.dart';
 import '../../blocs/tasks/task_event.dart';
 import '../../blocs/tasks/task_state.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../widgets/tasks/task_card.dart';
 import '../../widgets/dashboard/stats_card.dart';
 import '../../widgets/dashboard/quick_actions.dart';
@@ -79,6 +80,9 @@ class _EmployeeHomePageState extends State<EmployeeHomePage> {
             ],
           ),
         ],
+      ),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.employeeHome,
       ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
@@ -208,7 +212,7 @@ class _EmployeeHomePageState extends State<EmployeeHomePage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -370,10 +374,10 @@ class _EmployeeHomePageState extends State<EmployeeHomePage> {
             ),
           )
         else if (taskState is TasksLoaded)
-          taskState.tasks.isEmpty
+          _prioritizedTasks(taskState.tasks).isEmpty
               ? _buildEmptyState()
               : Column(
-                  children: taskState.tasks
+                  children: _prioritizedTasks(taskState.tasks)
                       .take(3) // Show only recent 3 tasks
                       .map(
                         (task) => Padding(
@@ -396,6 +400,17 @@ class _EmployeeHomePageState extends State<EmployeeHomePage> {
           _buildEmptyState(),
       ],
     );
+  }
+
+  List<dynamic> _prioritizedTasks(List<dynamic> tasks) {
+    final sorted = List<dynamic>.from(tasks)
+      ..sort((a, b) {
+        final aDone = a.status == 'Completed' || a.status == 'Cancelled';
+        final bDone = b.status == 'Completed' || b.status == 'Cancelled';
+        if (aDone != bDone) return aDone ? 1 : -1;
+        return b.dateReported.compareTo(a.dateReported);
+      });
+    return sorted;
   }
 
   Widget _buildEmptyState() {

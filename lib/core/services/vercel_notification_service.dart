@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:dartz/dartz.dart';
@@ -27,9 +28,9 @@ class VercelNotificationService {
         'category': category,
       };
 
-      print('Sending task notification to Vercel API...');
-      print('URL: $url');
-      print('Body: $body');
+      developer.log('Sending task notification to Vercel API...');
+      developer.log('URL: $url');
+      developer.log('Body: $body');
 
       final response = await http.post(
         url,
@@ -37,16 +38,16 @@ class VercelNotificationService {
         body: json.encode(body),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      developer.log('Response status: ${response.statusCode}');
+      developer.log('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['success'] == true) {
-          print('✅ Task notification sent successfully');
+          developer.log('✅ Task notification sent successfully');
           return const Right(null);
         } else {
-          print('❌ API returned success=false');
+          developer.log('❌ API returned success=false');
           return Left(
             ServerFailure(
               message: 'API returned error: ${responseData['error']}',
@@ -54,7 +55,7 @@ class VercelNotificationService {
           );
         }
       } else {
-        print('❌ HTTP error: ${response.statusCode}');
+        developer.log('❌ HTTP error: ${response.statusCode}');
         return Left(
           ServerFailure(
             message: 'HTTP ${response.statusCode}: ${response.body}',
@@ -62,7 +63,7 @@ class VercelNotificationService {
         );
       }
     } catch (e) {
-      print('❌ Exception sending task notification: $e');
+      developer.log('❌ Exception sending task notification: $e');
       return Left(
         ServerFailure(message: 'Failed to send task notification: $e'),
       );
@@ -86,7 +87,7 @@ class VercelNotificationService {
         'data': data ?? {},
       };
 
-      print('Sending notification to topic: $topic');
+      developer.log('Sending notification to topic: $topic');
 
       final response = await http.post(
         url,
@@ -97,7 +98,7 @@ class VercelNotificationService {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['success'] == true) {
-          print('✅ Notification sent to topic: $topic');
+          developer.log('✅ Notification sent to topic: $topic');
           return const Right(null);
         } else {
           return Left(
@@ -112,7 +113,7 @@ class VercelNotificationService {
         );
       }
     } catch (e) {
-      print('❌ Exception sending notification: $e');
+      developer.log('❌ Exception sending notification: $e');
       return Left(ServerFailure(message: 'Failed to send notification: $e'));
     }
   }
@@ -134,7 +135,9 @@ class VercelNotificationService {
         'data': data ?? {},
       };
 
-      print('Sending notification to token: ${token.substring(0, 20)}...');
+      developer.log(
+        'Sending notification to token: ${token.substring(0, 20)}...',
+      );
 
       final response = await http.post(
         url,
@@ -145,7 +148,9 @@ class VercelNotificationService {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['success'] == true) {
-          print('✅ Notification sent to token: ${token.substring(0, 20)}...');
+          developer.log(
+            '✅ Notification sent to token: ${token.substring(0, 20)}...',
+          );
           return const Right(null);
         } else {
           return Left(
@@ -160,7 +165,7 @@ class VercelNotificationService {
         );
       }
     } catch (e) {
-      print('❌ Exception sending notification: $e');
+      developer.log('❌ Exception sending notification: $e');
       return Left(ServerFailure(message: 'Failed to send notification: $e'));
     }
   }
@@ -186,7 +191,7 @@ class VercelNotificationService {
         'category': category,
       };
 
-      print(
+      developer.log(
         'Sending task notification to ${managerTokens.length} manager tokens...',
       );
 
@@ -199,7 +204,7 @@ class VercelNotificationService {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['success'] == true) {
-          print(
+          developer.log(
             '✅ Notification sent to ${responseData['sent']}/${responseData['total']} managers',
           );
           return const Right(null);
@@ -216,7 +221,7 @@ class VercelNotificationService {
         );
       }
     } catch (e) {
-      print('❌ Exception sending notification to managers: $e');
+      developer.log('❌ Exception sending notification to managers: $e');
       return Left(
         ServerFailure(message: 'Failed to send notification to managers: $e'),
       );

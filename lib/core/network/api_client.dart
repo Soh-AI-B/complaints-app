@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../constants/app_constants.dart';
@@ -272,8 +273,8 @@ class ApiClient {
 
   // Check network connectivity
   Future<void> _checkConnectivity() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
       throw const NetworkException(message: 'No internet connection available');
     }
   }
@@ -361,25 +362,27 @@ class ApiClient {
   // Logging methods (only in debug mode)
   void _logRequest(RequestOptions options) {
     // TODO: Implement proper logging
-    print('REQUEST: ${options.method} ${options.path}');
+    developer.log('REQUEST: ${options.method} ${options.path}');
     if (options.queryParameters.isNotEmpty) {
-      print('QUERY PARAMS: ${options.queryParameters}');
+      developer.log('QUERY PARAMS: ${options.queryParameters}');
     }
     if (options.data != null) {
-      print('DATA: ${options.data}');
+      developer.log('DATA: ${options.data}');
     }
   }
 
   void _logResponse(Response response) {
     // TODO: Implement proper logging
-    print('RESPONSE: ${response.statusCode} ${response.requestOptions.path}');
+    developer.log(
+      'RESPONSE: ${response.statusCode} ${response.requestOptions.path}',
+    );
   }
 
   void _logError(DioException error) {
     // TODO: Implement proper logging
-    print('ERROR: ${error.type} ${error.message}');
+    developer.log('ERROR: ${error.type} ${error.message}');
     if (error.response != null) {
-      print(
+      developer.log(
         'ERROR RESPONSE: ${error.response?.statusCode} ${error.response?.data}',
       );
     }

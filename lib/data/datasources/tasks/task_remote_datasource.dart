@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
@@ -316,7 +317,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       final snapshot = await firestore
           .collection('tasks')
           .where('title', isGreaterThanOrEqualTo: query)
-          .where('title', isLessThan: query + 'z')
+          .where('title', isLessThan: '${query}z')
           .get();
       return snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList();
     } catch (e) {
@@ -580,24 +581,24 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   @override
   Future<void> deleteTaskImage(String taskId, String imageUrl) async {
     try {
-      print(
+      developer.log(
         '🖼️ TaskRemoteDataSource: Deleting image for task $taskId: $imageUrl',
       );
 
       if (imageUrl.contains('cloudinary.com')) {
         // For Cloudinary images, we rely on the CloudinaryService
         // The actual deletion is handled by the use case layer
-        print(
+        developer.log(
           '🖼️ Cloudinary image detected - deletion handled by service layer',
         );
       } else {
         // For Firebase Storage images (legacy support)
         final ref = storage.refFromURL(imageUrl);
         await ref.delete();
-        print('🖼️ Firebase Storage image deleted');
+        developer.log('🖼️ Firebase Storage image deleted');
       }
     } catch (e) {
-      print('🖼️ Error deleting image: $e');
+      developer.log('🖼️ Error deleting image: $e');
       throw ServerException(message: 'Failed to delete task image: $e');
     }
   }

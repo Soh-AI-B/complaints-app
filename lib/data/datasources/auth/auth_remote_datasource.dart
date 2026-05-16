@@ -1,8 +1,7 @@
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:dartz/dartz.dart';
 import '../../../core/error/exceptions.dart';
-import '../../../domain/entities/app_user.dart';
 import '../../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -56,7 +55,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signIn(String email, String password) async {
     try {
-      print('DEBUG: Starting sign in for $email');
+      developer.log('DEBUG: Starting sign in for $email');
 
       final credential = await firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -64,39 +63,47 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (credential.user == null) {
-        print('DEBUG: Firebase auth failed - no user returned');
+        developer.log('DEBUG: Firebase auth failed - no user returned');
         throw const ServerException(message: 'Sign in failed');
       }
 
-      print(
+      developer.log(
         'DEBUG: Firebase auth successful, user ID: ${credential.user!.uid}',
       );
 
       // First, try to get user data from Firestore using UID
-      print('DEBUG: Fetching user document from Firestore using UID...');
+      developer.log(
+        'DEBUG: Fetching user document from Firestore using UID...',
+      );
       final userDocByUid = await firestore
           .collection('users')
           .doc(credential.user!.uid)
           .get();
 
       if (userDocByUid.exists) {
-        print('DEBUG: User document found by UID, converting to UserModel...');
+        developer.log(
+          'DEBUG: User document found by UID, converting to UserModel...',
+        );
+        _ensureAccountCanAccess(userDocByUid.data() ?? {});
         return UserModel.fromFirestore(userDocByUid);
       }
 
       // If not found by UID, try to find by email (for users created via AdminSetup)
-      print('DEBUG: User document not found by UID, searching by email...');
+      developer.log(
+        'DEBUG: User document not found by UID, searching by email...',
+      );
       final userQueryByEmail = await firestore
           .collection('users')
           .where('userEmail', isEqualTo: email)
           .get();
 
       if (userQueryByEmail.docs.isNotEmpty) {
-        print(
+        developer.log(
           'DEBUG: User document found by email, migrating to UID-based document...',
         );
         final existingUserDoc = userQueryByEmail.docs.first;
         final userData = existingUserDoc.data();
+        _ensureAccountCanAccess(userData);
 
         // Create a new document using the Firebase Auth UID
         await firestore
@@ -107,7 +114,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         // Delete the old document (optional, but keeps database clean)
         await existingUserDoc.reference.delete();
 
-        print('DEBUG: User migrated to UID-based document');
+        developer.log('DEBUG: User migrated to UID-based document');
         return UserModel.fromFirestore(
           await firestore.collection('users').doc(credential.user!.uid).get(),
         );
@@ -115,16 +122,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       // If user doesn't exist in Firestore at all, this shouldn't happen for login
       // This indicates the user needs to register first
-      print('DEBUG: No user document found in Firestore for $email');
+      developer.log('DEBUG: No user document found in Firestore for $email');
       throw const ServerException(
         message:
             'User account not found. Please register first or contact administrator.',
       );
     } on FirebaseAuthException catch (e) {
-      print('DEBUG: FirebaseAuthException: ${e.code} - ${e.message}');
+      developer.log('DEBUG: FirebaseAuthException: ${e.code} - ${e.message}');
       throw ServerException(message: _mapFirebaseAuthException(e));
+    } on ServerException {
+      rethrow;
     } catch (e) {
-      print('DEBUG: Unexpected error in signIn: $e');
+      developer.log('DEBUG: Unexpected error in signIn: $e');
       throw ServerException(message: 'An unexpected error occurred: $e');
     }
   }
@@ -193,7 +202,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const ServerException(message: 'User data not found');
       }
 
+      _ensureAccountCanAccess(userDoc.data() ?? {});
       return UserModel.fromFirestore(userDoc);
+    } on ServerException {
+      rethrow;
     } catch (e) {
       throw ServerException(message: 'Failed to get current user: $e');
     }
@@ -249,6 +261,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return 'Network error. Please check your connection';
       default:
         return e.message ?? 'Authentication failed';
+    }
+  }
+
+  void _ensureAccountCanAccess(Map<String, dynamic> data) {
+    if (data['is_deleted'] == true) {
+      throw const ServerException(
+        message:
+            'This account has been removed. Please contact an administrator.',
+      );
+    }
+
+    if (data['is_active'] == false) {
+      throw const ServerException(
+        message:
+            'This account is deactivated. Please contact an administrator.',
+      );
     }
   }
 }

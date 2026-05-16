@@ -8,6 +8,7 @@ import 'core/services/navigation_service.dart';
 import 'core/services/web_redirect_service.dart';
 import 'core/services/platform_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
+import 'presentation/widgets/common/auth_session_guard.dart';
 import 'injection_container.dart' as di;
 
 class ComplaintsApp extends StatefulWidget {
@@ -36,6 +37,7 @@ class _ComplaintsAppState extends State<ComplaintsApp> {
       // Check for device compatibility issues
       final hasDeviceIssues =
           await PlatformService.hasDeviceCompatibilityIssues();
+      if (!mounted) return;
 
       // Check if redirect is needed
       final shouldRedirect = await WebRedirectService.checkAndHandleRedirect(
@@ -61,6 +63,9 @@ class _ComplaintsAppState extends State<ComplaintsApp> {
         navigatorKey: NavigationService.navigatorKey,
         initialRoute: AppRoutes.splash,
         onGenerateRoute: RouteGenerator.generateRoute,
+        builder: (context, child) {
+          return AuthSessionGuard(child: child ?? const SizedBox.shrink());
+        },
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,17 +41,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthStarted event,
     Emitter<AuthState> emit,
   ) async {
-    print('DEBUG AUTH BLOC: AuthStarted event triggered');
+    developer.log('DEBUG AUTH BLOC: AuthStarted event triggered');
     emit(AuthLoading());
 
     final result = await getCurrentUserUseCase();
     await result.fold(
       (failure) async {
-        print('DEBUG AUTH BLOC: getCurrentUser failed: ${failure.toString()}');
+        developer.log(
+          'DEBUG AUTH BLOC: getCurrentUser failed: ${failure.toString()}',
+        );
         emit(AuthUnauthenticated());
       },
       (user) async {
-        print(
+        developer.log(
           'DEBUG AUTH BLOC: getCurrentUser success, isAuthenticated: ${user.isAuthenticated}',
         );
         if (user.isAuthenticated) {
@@ -82,9 +85,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await result.fold(
       (failure) async => emit(AuthError(_getFailureMessage(failure))),
       (user) async {
-        print('DEBUG AUTH BLOC: User logged in with role: ${user.role}');
-        print('DEBUG AUTH BLOC: User email: ${user.email}');
-        print('DEBUG AUTH BLOC: User name: ${user.name}');
+        developer.log(
+          'DEBUG AUTH BLOC: User logged in with role: ${user.role}',
+        );
+        developer.log('DEBUG AUTH BLOC: User email: ${user.email}');
+        developer.log('DEBUG AUTH BLOC: User name: ${user.name}');
 
         // Subscribe to FCM topics based on user role
         await FCMService.subscribeToUserRole(user.role);
@@ -128,13 +133,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        print(
+        developer.log(
           'AUTH BLOC: Removing FCM token from user ${currentUser.uid} before logout',
         );
         await FCMService.removeFCMTokenFromFirestore(currentUser.uid);
       }
     } catch (e) {
-      print('Error removing FCM token during logout: $e');
+      developer.log('Error removing FCM token during logout: $e');
     }
 
     // Unsubscribe from FCM topics before logout
@@ -144,7 +149,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await FCMService.unsubscribeFromTopic('employees');
       await FCMService.unsubscribeFromTopic('all_users');
     } catch (e) {
-      print('Error unsubscribing from FCM topics: $e');
+      developer.log('Error unsubscribing from FCM topics: $e');
     }
 
     final result = await logoutUseCase();
@@ -224,12 +229,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   String _getFailureMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case AuthenticationFailure:
+    switch (failure) {
+      case AuthenticationFailure _:
         return failure.message;
-      case NetworkFailure:
+      case NetworkFailure _:
         return 'Network error. Please check your internet connection.';
-      case ServerFailure:
+      case ServerFailure _:
         return 'Server error. Please try again later.';
       default:
         return 'An unexpected error occurred. Please try again.';

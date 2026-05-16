@@ -217,12 +217,15 @@ class TaskRepositoryImpl implements TaskRepository {
         if (priority != null) updates['priority'] = priority;
         if (status != null) updates['status'] = status;
         if (assignedTo != null) updates['assignedTo'] = assignedTo;
-        if (estimatedCompletion != null)
+        if (estimatedCompletion != null) {
           updates['estimatedCompletion'] = estimatedCompletion;
-        if (pictureUrl != null)
+        }
+        if (pictureUrl != null) {
           updates['pictureUrl'] = pictureUrl; // Keep for backward compatibility
-        if (pictureUrls != null)
+        }
+        if (pictureUrls != null) {
           updates['pictureUrls'] = pictureUrls; // New field for multiple images
+        }
         updates['dateUpdated'] = DateTime.now();
 
         final taskModel = await remoteDataSource.updateTask(taskId, updates);

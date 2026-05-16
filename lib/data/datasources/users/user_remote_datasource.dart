@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/error/exceptions.dart';
@@ -372,7 +373,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         'requested_by': auth.currentUser?.email ?? 'system',
       });
 
-      print(
+      developer.log(
         'User marked as deleted in Firestore. Auth deletion request created.',
       );
     } catch (e) {

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:dartz/dartz.dart';
 import '../../../core/error/failures.dart';
 import '../../entities/notification.dart';
@@ -10,10 +11,10 @@ class SendNewTaskNotificationUseCase {
   SendNewTaskNotificationUseCase(this.repository);
 
   Future<Either<Failure, List<Notification>>> call(entities.Task task) async {
-    print(
+    developer.log(
       '🔔 SendNewTaskNotificationUseCase: Starting for task ${task.taskId}',
     );
-    print('🔔 Task details: ${task.title} by ${task.employeeName}');
+    developer.log('🔔 Task details: ${task.title} by ${task.employeeName}');
 
     final title = 'New Task Created';
     final message =
@@ -27,7 +28,7 @@ class SendNewTaskNotificationUseCase {
       'employeeEmail': task.employeeEmail,
     };
 
-    print('🔔 Sending notification with data: $data');
+    developer.log('🔔 Sending notification with data: $data');
 
     return await repository.sendNotificationToManagersAndAdmins(
       title: title,

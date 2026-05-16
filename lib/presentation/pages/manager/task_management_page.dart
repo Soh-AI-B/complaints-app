@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -44,8 +45,9 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
   String _selectedPriority = 'Normal';
   String _selectedStatus = 'Pending';
   DateTime? _estimatedCompletion;
-  List<File> _selectedImages = []; // Changed to support multiple images
-  List<String> _currentImageUrls = []; // Changed to support multiple images
+  final List<File> _selectedImages = []; // Changed to support multiple images
+  final List<String> _currentImageUrls =
+      []; // Changed to support multiple images
 
   // Employee selection - COMMENTED OUT (not needed for complaint creation)
   // List<User> _employees = [];
@@ -324,14 +326,15 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
                                             AppDimensions.paddingM,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: AppColors.primary
-                                                .withOpacity(0.05),
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.05,
+                                            ),
                                             borderRadius: BorderRadius.circular(
                                               AppDimensions.radiusM,
                                             ),
                                             border: Border.all(
                                               color: AppColors.primary
-                                                  .withOpacity(0.2),
+                                                  .withValues(alpha: 0.2),
                                             ),
                                           ),
                                           child: Column(
@@ -456,17 +459,17 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
   }
 
   Stream<List<TaskNote>> _getNotesStream() {
-    print('Creating notes stream for task: ${widget.task!.taskId}');
+    developer.log('Creating notes stream for task: ${widget.task!.taskId}');
     return FirebaseFirestore.instance
         .collection('task_notes')
         .where('task_id', isEqualTo: widget.task!.taskId)
         .snapshots()
         .map((snapshot) {
-          print('Stream received ${snapshot.docs.length} documents');
+          developer.log('Stream received ${snapshot.docs.length} documents');
           final notes = snapshot.docs.map((doc) {
-            print('Processing document: ${doc.id}');
+            developer.log('Processing document: ${doc.id}');
             final data = doc.data();
-            print('Document data: $data');
+            developer.log('Document data: $data');
 
             return TaskNote(
               note: data['note'] as String? ?? '',
@@ -481,7 +484,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
           // Sort by created_at in Dart to avoid Firestore index requirement
           notes.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-          print('Converted to ${notes.length} TaskNote objects');
+          developer.log('Converted to ${notes.length} TaskNote objects');
           return notes;
         });
   }
@@ -519,7 +522,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
             borderRadius: BorderRadius.circular(AppDimensions.radiusM),
           ),
           child: DropdownButtonFormField<String>(
-            value: value,
+            initialValue: value,
             decoration: const InputDecoration(
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(
@@ -592,7 +595,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
       children: [
         if (totalImages > 0) ...[
           Text(
-            'Images (${totalImages}/${AppConstants.maxImagesPerTask})',
+            'Images ($totalImages/${AppConstants.maxImagesPerTask})',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -623,7 +626,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
                 onPressed: totalImages >= AppConstants.maxImagesPerTask
                     ? null
                     : () => _showImagePickerDialog(),
-                backgroundColor: AppColors.primary.withOpacity(0.1),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                 textColor: AppColors.primary,
               ),
             ),
@@ -661,7 +664,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -745,7 +748,7 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -970,6 +973,8 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
       // Add existing image URLs
       imageUrls.addAll(_currentImageUrls);
 
+      if (!mounted) return;
+
       // Create complaint using manager's own data
       context.read<TaskBloc>().add(
         CreateTask(
@@ -984,19 +989,18 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isUploading = false;
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload image: $e'),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload image: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 5),
+        ),
+      );
     }
   }
 
@@ -1022,6 +1026,8 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
         }
       }
 
+      if (!mounted) return;
+
       // Update the complaint without changing employee assignment (keeps original creator)
       context.read<TaskBloc>().add(
         UpdateTask(
@@ -1041,19 +1047,18 @@ class _TaskManagementPageState extends State<TaskManagementPage> {
         _addManagerNote(_managerNotesController.text.trim());
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isUploading = false;
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload image: $e'),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload image: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 5),
+        ),
+      );
     }
   }
 

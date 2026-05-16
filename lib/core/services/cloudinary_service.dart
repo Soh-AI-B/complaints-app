@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:convert';
 import 'package:cloudinary_public/cloudinary_public.dart';
@@ -83,15 +84,15 @@ class CloudinaryService {
   /// Returns true if deletion was successful
   Future<bool> deleteImage(String publicId) async {
     try {
-      print('🗑️ Attempting to delete image with public ID: $publicId');
+      developer.log('🗑️ Attempting to delete image with public ID: $publicId');
 
       // Check if credentials are configured
       if (_apiKey == 'YOUR_ACTUAL_API_KEY' ||
           _apiSecret == 'YOUR_ACTUAL_API_SECRET') {
-        print(
+        developer.log(
           '🗑️ ⚠️ Cloudinary API credentials not configured - skipping image deletion',
         );
-        print(
+        developer.log(
           '🗑️ ⚠️ Please update _apiKey and _apiSecret in CloudinaryService',
         );
         return true; // Don't fail the task deletion because of missing credentials
@@ -116,7 +117,7 @@ class CloudinaryService {
         'signature': signature,
       };
 
-      print('🗑️ Making deletion request to Cloudinary...');
+      developer.log('🗑️ Making deletion request to Cloudinary...');
 
       // Make the DELETE request
       final response = await http.post(
@@ -125,45 +126,45 @@ class CloudinaryService {
         body: body,
       );
 
-      print('🗑️ Response status: ${response.statusCode}');
-      print('🗑️ Response body: ${response.body}');
+      developer.log('🗑️ Response status: ${response.statusCode}');
+      developer.log('🗑️ Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         final result = responseData['result'] as String?;
 
         if (result == 'ok') {
-          print('🗑️ ✅ Image deleted successfully from Cloudinary');
+          developer.log('🗑️ ✅ Image deleted successfully from Cloudinary');
           return true;
         } else if (result == 'not found') {
-          print(
+          developer.log(
             '🗑️ ⚠️ Image not found in Cloudinary (may have been deleted already)',
           );
           return true; // Consider this a success since the image is not there
         } else {
-          print('🗑️ ❌ Unexpected result from Cloudinary: $result');
+          developer.log('🗑️ ❌ Unexpected result from Cloudinary: $result');
           return false;
         }
       } else if (response.statusCode == 401) {
         final responseData = jsonDecode(response.body);
         final errorMessage =
             responseData['error']?['message'] ?? 'Unauthorized';
-        print('🗑️ ❌ Authentication failed: $errorMessage');
-        print('🗑️ ❌ Please check your Cloudinary API key and secret');
+        developer.log('🗑️ ❌ Authentication failed: $errorMessage');
+        developer.log('🗑️ ❌ Please check your Cloudinary API key and secret');
         return false;
       } else if (response.statusCode == 404) {
-        print(
+        developer.log(
           '🗑️ ⚠️ Image not found in Cloudinary (404) - considering this a success',
         );
         return true; // Image doesn't exist, so deletion is technically successful
       } else {
-        print(
+        developer.log(
           '🗑️ ❌ Failed to delete image. Status: ${response.statusCode}, Body: ${response.body}',
         );
         return false;
       }
     } catch (e) {
-      print('🗑️ ❌ Exception during image deletion: $e');
+      developer.log('🗑️ ❌ Exception during image deletion: $e');
       return false;
     }
   }

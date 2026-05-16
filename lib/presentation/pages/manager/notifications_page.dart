@@ -9,6 +9,7 @@ import '../../blocs/tasks/task_bloc.dart';
 import '../../blocs/tasks/task_event.dart';
 import '../../blocs/tasks/task_state.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/notifications/notification_card.dart';
 import '../../../core/constants/colors.dart';
@@ -208,6 +209,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.notifications,
+      ),
       body: BlocConsumer<NotificationBloc, NotificationState>(
         listener: (context, state) {
           if (state is NotificationError) {
@@ -254,7 +258,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingM),
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               child: Row(
                 children: [
                   Icon(

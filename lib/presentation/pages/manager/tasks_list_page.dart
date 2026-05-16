@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_constants.dart';
@@ -6,6 +7,7 @@ import '../../blocs/tasks/task_event.dart';
 import '../../blocs/tasks/task_state.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../widgets/common/error_widget.dart';
 import '../../widgets/tasks/task_card.dart';
 import '../../../core/constants/colors.dart';
@@ -26,12 +28,18 @@ class TasksListPage extends StatefulWidget {
 class _TasksListPageState extends State<TasksListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedStatus = 'All';
+  String _selectedStatus = 'Pending';
   String _selectedPriority = 'All';
   String _selectedCategory = 'All';
   String _searchQuery = '';
 
-  final List<String> _statusOptions = ['All'] + AppConstants.taskStatuses;
+  final List<String> _statusOptions = [
+    'Pending',
+    'In Progress',
+    'All',
+    'Completed',
+    'Cancelled',
+  ];
   final List<String> _priorityOptions = ['All'] + AppConstants.taskPriorities;
   final List<String> _categoryOptions = ['All'] + AppConstants.taskCategories;
 
@@ -40,7 +48,7 @@ class _TasksListPageState extends State<TasksListPage>
     super.initState();
 
     // Initialize filters based on passed parameters
-    if (widget.initialStatus != null) {
+    if (widget.initialStatus != null && widget.initialStatus!.isNotEmpty) {
       _selectedStatus = widget.initialStatus!;
     }
     if (widget.initialPriority != null) {
@@ -49,9 +57,9 @@ class _TasksListPageState extends State<TasksListPage>
 
     // Set tab controller index based on status
     int tabIndex = 0;
-    if (_selectedStatus == 'Pending') {
+    if (_selectedStatus == 'In Progress') {
       tabIndex = 1;
-    } else if (_selectedStatus == 'In Progress') {
+    } else if (_selectedStatus == 'All') {
       tabIndex = 2;
     } else if (_selectedStatus == 'Completed') {
       tabIndex = 3;
@@ -100,6 +108,9 @@ class _TasksListPageState extends State<TasksListPage>
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: AppColors.textLight),
       ),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.tasksList,
+      ),
       body: Column(
         children: [
           // Tab Bar
@@ -111,9 +122,9 @@ class _TasksListPageState extends State<TasksListPage>
               unselectedLabelColor: AppColors.textSecondary,
               indicatorColor: AppColors.primary,
               tabs: const [
-                Tab(text: 'All'),
                 Tab(text: 'Pending'),
                 Tab(text: 'In Progress'),
+                Tab(text: 'All'),
                 Tab(text: 'Completed'),
               ],
               onTap: (index) {
@@ -141,17 +152,23 @@ class _TasksListPageState extends State<TasksListPage>
                 },
                 child: BlocBuilder<TaskBloc, TaskState>(
                   builder: (context, state) {
+                    developer.log('📋 TasksListPage: BlocBuilder state = ${state.runtimeType}, tasks=${state is TasksLoaded ? state.tasks.length : 'N/A'}');
                     if (state is TaskLoading) {
+                      developer.log('📋 TasksListPage: Loading...');
                       return const LoadingWidget();
                     } else if (state is TasksLoaded) {
+                      developer.log('📋 TasksListPage: Loaded ${state.tasks.length} tasks, filtering with status=$_selectedStatus');
                       final filteredTasks = _filterTasks(state.tasks);
+                      developer.log('📋 TasksListPage: After filter: ${filteredTasks.length} tasks');
                       return _buildTasksList(filteredTasks);
                     } else if (state is TaskError) {
+                      developer.log('📋 TasksListPage: Error - ${state.message}');
                       return CustomErrorWidget(
                         message: state.message,
                         onRetry: _loadTasks,
                       );
                     } else {
+                      developer.log('📋 TasksListPage: Initial/Unknown state');
                       return const EmptyStateWidget(
                         title: 'No Tasks',
                         message: 'No tasks found',
@@ -246,8 +263,14 @@ class _TasksListPageState extends State<TasksListPage>
           .toList();
     }
 
-    // Sort by creation date (newest first)
-    filteredTasks.sort((a, b) => b.dateReported.compareTo(a.dateReported));
+    filteredTasks.sort((a, b) {
+      final aDone = a.status == 'Completed' || a.status == 'Cancelled';
+      final bDone = b.status == 'Completed' || b.status == 'Cancelled';
+      if (aDone != bDone) return aDone ? 1 : -1;
+      if (a.isUrgent != b.isUrgent) return a.isUrgent ? -1 : 1;
+      if (a.isOverdue != b.isOverdue) return a.isOverdue ? -1 : 1;
+      return b.dateReported.compareTo(a.dateReported);
+    });
 
     return filteredTasks;
   }
@@ -432,8 +455,8 @@ class _TasksListPageState extends State<TasksListPage>
                                       _selectedStatus = status;
                                     });
                                   },
-                                  selectedColor: AppColors.primary.withOpacity(
-                                    0.2,
+                                  selectedColor: AppColors.primary.withValues(
+                                    alpha: 0.2,
                                   ),
                                   checkmarkColor: AppColors.primary,
                                 );
@@ -462,8 +485,8 @@ class _TasksListPageState extends State<TasksListPage>
                                       _selectedPriority = priority;
                                     });
                                   },
-                                  selectedColor: AppColors.primary.withOpacity(
-                                    0.2,
+                                  selectedColor: AppColors.primary.withValues(
+                                    alpha: 0.2,
                                   ),
                                   checkmarkColor: AppColors.primary,
                                 );
@@ -492,8 +515,8 @@ class _TasksListPageState extends State<TasksListPage>
                                       _selectedCategory = category;
                                     });
                                   },
-                                  selectedColor: AppColors.primary.withOpacity(
-                                    0.2,
+                                  selectedColor: AppColors.primary.withValues(
+                                    alpha: 0.2,
                                   ),
                                   checkmarkColor: AppColors.primary,
                                 );

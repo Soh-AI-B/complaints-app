@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/error/exceptions.dart';
@@ -241,10 +242,10 @@ class AuthRepositoryImpl implements AuthRepository {
     final firebaseUser = FirebaseAuth.instance.currentUser;
     final userId = firebaseUser?.uid ?? userModel.userEmail;
 
-    print('🔔 AUTH: Converting UserModel to AppUser');
-    print('🔔 AUTH: Firebase UID: ${firebaseUser?.uid}');
-    print('🔔 AUTH: User Email: ${userModel.userEmail}');
-    print('🔔 AUTH: Using ID: $userId');
+    developer.log('🔔 AUTH: Converting UserModel to AppUser');
+    developer.log('🔔 AUTH: Firebase UID: ${firebaseUser?.uid}');
+    developer.log('🔔 AUTH: User Email: ${userModel.userEmail}');
+    developer.log('🔔 AUTH: Using ID: $userId');
 
     return AppUser(
       id: userId, // ✅ Use Firebase Auth UID instead of email

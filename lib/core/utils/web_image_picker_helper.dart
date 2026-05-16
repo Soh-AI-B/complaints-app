@@ -23,6 +23,7 @@ class WebImagePickerHelper {
         // Validate image
         final validationError = await _validateImage(bytes, image.name);
         if (validationError != null) {
+          if (!context.mounted) return null;
           _showErrorDialog(context, validationError);
           return null;
         }
@@ -32,6 +33,7 @@ class WebImagePickerHelper {
 
       return null;
     } catch (e) {
+      if (!context.mounted) return null;
       _showErrorDialog(context, 'Failed to pick image from gallery');
       return null;
     }
@@ -61,6 +63,7 @@ class WebImagePickerHelper {
         // Validate image
         final validationError = await _validateImage(bytes, image.name);
         if (validationError != null) {
+          if (!context.mounted) return null;
           _showErrorDialog(context, validationError);
           return null;
         }
@@ -70,6 +73,7 @@ class WebImagePickerHelper {
 
       return null;
     } catch (e) {
+      if (!context.mounted) return null;
       _showErrorDialog(context, 'Failed to capture image from camera');
       return null;
     }
@@ -79,7 +83,7 @@ class WebImagePickerHelper {
   static Future<Uint8List?> showImagePickerDialog(BuildContext context) async {
     return showDialog<Uint8List?>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Select Image'),
           content: Column(
@@ -89,11 +93,9 @@ class WebImagePickerHelper {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Choose from Gallery'),
                 onTap: () async {
-                  Navigator.of(context).pop();
-                  final bytes = await pickImageFromGallery(context);
-                  if (bytes != null) {
-                    Navigator.of(context).pop(bytes);
-                  }
+                  final bytes = await pickImageFromGallery(dialogContext);
+                  if (!dialogContext.mounted) return;
+                  Navigator.of(dialogContext).pop(bytes);
                 },
               ),
               if (!kIsWeb) // Only show camera option on mobile
@@ -101,18 +103,16 @@ class WebImagePickerHelper {
                   leading: const Icon(Icons.camera_alt),
                   title: const Text('Take Photo'),
                   onTap: () async {
-                    Navigator.of(context).pop();
-                    final bytes = await pickImageFromCamera(context);
-                    if (bytes != null) {
-                      Navigator.of(context).pop(bytes);
-                    }
+                    final bytes = await pickImageFromCamera(dialogContext);
+                    if (!dialogContext.mounted) return;
+                    Navigator.of(dialogContext).pop(bytes);
                   },
                 ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancel'),
             ),
           ],

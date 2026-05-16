@@ -38,7 +38,7 @@ class CategoryDropdown extends StatelessWidget {
             color: AppColors.surface,
           ),
           child: DropdownButtonFormField<String>(
-            value: value,
+            initialValue: value,
             decoration: const InputDecoration(
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(

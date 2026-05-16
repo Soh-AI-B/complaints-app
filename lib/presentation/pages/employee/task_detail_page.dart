@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/tasks/task_bloc.dart';
@@ -28,9 +29,6 @@ class TaskDetailPage extends StatefulWidget {
 }
 
 class _TaskDetailPageState extends State<TaskDetailPage> {
-  final GlobalKey<RefreshIndicatorState> _refreshKey =
-      GlobalKey<RefreshIndicatorState>();
-
   @override
   void initState() {
     super.initState();
@@ -41,40 +39,18 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     context.read<TaskBloc>().add(LoadTaskById(taskId: widget.taskId));
   }
 
-  Future<List<TaskNote>> _loadTaskNotes() async {
-    print('Loading notes for task: ${widget.taskId}');
-    final repository = TaskNoteRepositoryImpl(
-      firestore: FirebaseFirestore.instance,
-    );
-    final result = await repository.getNotesForTask(widget.taskId);
-
-    return result.fold(
-      (failure) {
-        print('Failed to load notes: ${failure.message}');
-        return [];
-      },
-      (notes) {
-        print('Loaded ${notes.length} notes');
-        for (var note in notes) {
-          print('Note: ${note.note} by ${note.authorName}');
-        }
-        return notes;
-      },
-    );
-  }
-
   Stream<List<TaskNote>> _getNotesStream() {
-    print('Creating notes stream for task: ${widget.taskId}');
+    developer.log('Creating notes stream for task: ${widget.taskId}');
     return FirebaseFirestore.instance
         .collection('task_notes')
         .where('task_id', isEqualTo: widget.taskId)
         .snapshots()
         .map((snapshot) {
-          print('Stream received ${snapshot.docs.length} documents');
+          developer.log('Stream received ${snapshot.docs.length} documents');
           final notes = snapshot.docs.map((doc) {
-            print('Processing document: ${doc.id}');
+            developer.log('Processing document: ${doc.id}');
             final data = doc.data();
-            print('Document data: $data');
+            developer.log('Document data: $data');
 
             return TaskNote(
               note: data['note'] as String? ?? '',
@@ -89,7 +65,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           // Sort by created_at in Dart to avoid Firestore index requirement
           notes.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-          print('Converted to ${notes.length} TaskNote objects');
+          developer.log('Converted to ${notes.length} TaskNote objects');
           return notes;
         });
   }
@@ -201,12 +177,12 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary.withOpacity(0.1),
+                          color: AppColors.secondary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(
                             AppDimensions.radiusS,
                           ),
                           border: Border.all(
-                            color: AppColors.secondary.withOpacity(0.3),
+                            color: AppColors.secondary.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
@@ -373,12 +349,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                     AppDimensions.paddingM,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.05),
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.05,
+                                    ),
                                     borderRadius: BorderRadius.circular(
                                       AppDimensions.radiusM,
                                     ),
                                     border: Border.all(
-                                      color: AppColors.primary.withOpacity(0.2),
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.2,
+                                      ),
                                     ),
                                   ),
                                   child: Column(
@@ -480,7 +460,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                             AppDimensions.radiusM,
                           ),
                           border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: AppColors.primary.withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),
@@ -539,7 +519,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                               child: Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.6),
+                                  color: Colors.black.withValues(alpha: 0.6),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Icon(
@@ -700,7 +680,7 @@ class _EditTaskBottomSheetState extends State<_EditTaskBottomSheet> {
     String authorName,
     String authorEmail,
   ) async {
-    print('Adding note: $note by $authorName');
+    developer.log('Adding note: $note by $authorName');
     final repository = TaskNoteRepositoryImpl(
       firestore: FirebaseFirestore.instance,
     );
@@ -714,7 +694,7 @@ class _EditTaskBottomSheetState extends State<_EditTaskBottomSheet> {
 
     result.fold(
       (failure) {
-        print('Failed to add note: ${failure.message}');
+        developer.log('Failed to add note: ${failure.message}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to add note: ${failure.message}'),
@@ -723,7 +703,7 @@ class _EditTaskBottomSheetState extends State<_EditTaskBottomSheet> {
         );
       },
       (addedNote) {
-        print('Note added successfully: ${addedNote.note}');
+        developer.log('Note added successfully: ${addedNote.note}');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Note added successfully'),

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/cloudinary_service.dart';
 
@@ -34,7 +35,7 @@ class TaskCleanupService {
           .where('date_updated', isLessThan: Timestamp.fromDate(cutoffDate))
           .get();
 
-      print('Found ${tasksQuery.docs.length} tasks to cleanup');
+      developer.log('Found ${tasksQuery.docs.length} tasks to cleanup');
 
       for (final taskDoc in tasksQuery.docs) {
         try {
@@ -71,7 +72,7 @@ class TaskCleanupService {
                   results['imagesDeleted'] = results['imagesDeleted']! + 1;
                 }
               } catch (e) {
-                print(
+                developer.log(
                   'Failed to delete image $imageUrl for task ${taskDoc.id}: $e',
                 );
                 results['errors'] = results['errors']! + 1;
@@ -83,18 +84,18 @@ class TaskCleanupService {
           await taskDoc.reference.delete();
           results['tasksDeleted'] = results['tasksDeleted']! + 1;
 
-          print(
+          developer.log(
             'Cleaned up task: ${taskDoc.id} (deleted ${imageUrls.length} images)',
           );
         } catch (e) {
-          print('Error cleaning up task ${taskDoc.id}: $e');
+          developer.log('Error cleaning up task ${taskDoc.id}: $e');
           results['errors'] = results['errors']! + 1;
         }
       }
 
       return results;
     } catch (e) {
-      print('Error during cleanup process: $e');
+      developer.log('Error during cleanup process: $e');
       throw Exception('Cleanup failed: $e');
     }
   }
@@ -148,7 +149,7 @@ class TaskCleanupService {
         };
       }).toList();
     } catch (e) {
-      print('Error getting tasks to cleanup: $e');
+      developer.log('Error getting tasks to cleanup: $e');
       return [];
     }
   }
@@ -156,19 +157,19 @@ class TaskCleanupService {
   /// Schedule automatic cleanup (call this periodically)
   Future<void> scheduleCleanup() async {
     try {
-      print('Starting scheduled cleanup...');
+      developer.log('Starting scheduled cleanup...');
 
       final results = await cleanupOldTasks();
 
-      print('Cleanup completed:');
-      print('- Tasks deleted: ${results['tasksDeleted']}');
-      print('- Images deleted: ${results['imagesDeleted']}');
-      print('- Errors: ${results['errors']}');
+      developer.log('Cleanup completed:');
+      developer.log('- Tasks deleted: ${results['tasksDeleted']}');
+      developer.log('- Images deleted: ${results['imagesDeleted']}');
+      developer.log('- Errors: ${results['errors']}');
 
       // Log cleanup activity
       await _logCleanupActivity(results);
     } catch (e) {
-      print('Scheduled cleanup failed: $e');
+      developer.log('Scheduled cleanup failed: $e');
     }
   }
 
@@ -183,7 +184,7 @@ class TaskCleanupService {
         'cleanup_type': 'automatic',
       });
     } catch (e) {
-      print('Failed to log cleanup activity: $e');
+      developer.log('Failed to log cleanup activity: $e');
     }
   }
 
@@ -227,7 +228,7 @@ class TaskCleanupService {
         }
       }
 
-      print('Found ${referencedImages.length} referenced images');
+      developer.log('Found ${referencedImages.length} referenced images');
 
       // Note: To fully implement orphaned image cleanup, you would need:
       // 1. Cloudinary Admin API access to list all images
@@ -237,7 +238,7 @@ class TaskCleanupService {
 
       return cleanedCount;
     } catch (e) {
-      print('Error cleaning up orphaned images: $e');
+      developer.log('Error cleaning up orphaned images: $e');
       return 0;
     }
   }
@@ -298,7 +299,7 @@ class TaskCleanupService {
             : '0.0',
       };
     } catch (e) {
-      print('Error getting storage stats: $e');
+      developer.log('Error getting storage stats: $e');
       return {};
     }
   }

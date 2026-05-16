@@ -30,6 +30,7 @@ class ImagePickerHelper {
         // Validate image
         final validationError = await _validateImage(file);
         if (validationError != null) {
+          if (!context.mounted) return null;
           _showErrorDialog(context, validationError);
           return null;
         }
@@ -39,6 +40,7 @@ class ImagePickerHelper {
 
       return null;
     } catch (e) {
+      if (!context.mounted) return null;
       _showErrorDialog(context, 'Failed to pick image from gallery');
       return null;
     }
@@ -66,6 +68,7 @@ class ImagePickerHelper {
         // Validate image
         final validationError = await _validateImage(file);
         if (validationError != null) {
+          if (!context.mounted) return null;
           _showErrorDialog(context, validationError);
           return null;
         }
@@ -75,6 +78,7 @@ class ImagePickerHelper {
 
       return null;
     } catch (e) {
+      if (!context.mounted) return null;
       _showErrorDialog(context, 'Failed to capture image from camera');
       return null;
     }
@@ -84,7 +88,7 @@ class ImagePickerHelper {
   static Future<File?> showImagePickerDialog(BuildContext context) async {
     return showDialog<File?>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Select Image'),
           content: Column(
@@ -94,29 +98,25 @@ class ImagePickerHelper {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Choose from Gallery'),
                 onTap: () async {
-                  Navigator.of(context).pop();
-                  final file = await pickImageFromGallery(context);
-                  if (file != null) {
-                    Navigator.of(context).pop(file);
-                  }
+                  final file = await pickImageFromGallery(dialogContext);
+                  if (!dialogContext.mounted) return;
+                  Navigator.of(dialogContext).pop(file);
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
                 title: const Text('Take Photo'),
                 onTap: () async {
-                  Navigator.of(context).pop();
-                  final file = await pickImageFromCamera(context);
-                  if (file != null) {
-                    Navigator.of(context).pop(file);
-                  }
+                  final file = await pickImageFromCamera(dialogContext);
+                  if (!dialogContext.mounted) return;
+                  Navigator.of(dialogContext).pop(file);
                 },
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancel'),
             ),
           ],
@@ -131,6 +131,7 @@ class ImagePickerHelper {
 
     if (status.isDenied) {
       final result = await Permission.camera.request();
+      if (!context.mounted) return false;
       if (result.isDenied) {
         _showPermissionDialog(context, AppStrings.cameraPermission);
         return false;
@@ -138,6 +139,7 @@ class ImagePickerHelper {
     }
 
     if (status.isPermanentlyDenied) {
+      if (!context.mounted) return false;
       _showPermissionDialog(context, AppStrings.cameraPermission);
       return false;
     }
@@ -152,6 +154,7 @@ class ImagePickerHelper {
 
       if (status.isDenied) {
         final result = await Permission.storage.request();
+        if (!context.mounted) return false;
         if (result.isDenied) {
           _showPermissionDialog(context, AppStrings.storagePermission);
           return false;
@@ -159,6 +162,7 @@ class ImagePickerHelper {
       }
 
       if (status.isPermanentlyDenied) {
+        if (!context.mounted) return false;
         _showPermissionDialog(context, AppStrings.storagePermission);
         return false;
       }

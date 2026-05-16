@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -11,8 +12,6 @@ import 'core/services/cloudinary_service.dart';
 import 'core/services/task_cleanup_service.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/vercel_notification_service.dart';
-import 'core/services/platform_service.dart';
-import 'core/services/web_redirect_service.dart';
 
 // Data sources
 import 'data/datasources/auth/auth_remote_datasource.dart';
@@ -74,8 +73,8 @@ final sl = GetIt.instance;
 
 Future<void> init({bool firebaseAvailable = true}) async {
   try {
-    print('Initializing dependency injection...');
-    print('Firebase available: $firebaseAvailable');
+    developer.log('Initializing dependency injection...');
+    developer.log('Firebase available: $firebaseAvailable');
 
     //! External - Register SharedPreferences first
     final sharedPreferences = await SharedPreferences.getInstance();
@@ -280,14 +279,16 @@ Future<void> init({bool firebaseAvailable = true}) async {
         ),
       );
 
-      print('All services registered successfully with Firebase');
+      developer.log('All services registered successfully with Firebase');
     } else {
-      print('Firebase not available - app will run with limited functionality');
+      developer.log(
+        'Firebase not available - app will run with limited functionality',
+      );
     }
 
-    print('Dependency injection initialization complete');
+    developer.log('Dependency injection initialization complete');
   } catch (e) {
-    print('Error during dependency injection initialization: $e');
+    developer.log('Error during dependency injection initialization: $e');
     rethrow;
   }
 }

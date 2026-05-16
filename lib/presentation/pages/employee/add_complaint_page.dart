@@ -8,11 +8,13 @@ import '../../blocs/tasks/task_bloc.dart';
 import '../../blocs/tasks/task_event.dart';
 import '../../blocs/tasks/task_state.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/tasks/category_dropdown.dart';
 import '../../../core/services/cloudinary_service.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/routes/app_routes.dart';
 
 class AddComplaintPage extends StatefulWidget {
   const AddComplaintPage({super.key});
@@ -31,7 +33,7 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
   // Priority is always 'Normal' for employee-created tasks
   // Only managers/admins can change priority later
   final String _taskPriority = 'Normal';
-  List<File> _selectedImages = []; // Changed to support multiple images
+  final List<File> _selectedImages = []; // Changed to support multiple images
   bool _isUploading = false;
 
   final List<String> _categories = AppConstants.taskCategories;
@@ -196,6 +198,8 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
         }
       }
 
+      if (!mounted) return;
+
       // Create task
       context.read<TaskBloc>().add(
         CreateTask(
@@ -209,6 +213,7 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isUploading = false;
       });
@@ -229,6 +234,9 @@ class _AddComplaintPageState extends State<AddComplaintPage> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: const CustomAppBar(title: 'Add Complaint'),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.addComplaint,
+      ),
       body: BlocListener<TaskBloc, TaskState>(
         listener: (context, state) {
           if (state is TaskCreated) {

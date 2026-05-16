@@ -50,7 +50,8 @@ class WebOptimizedScaffold extends StatelessWidget {
           return Scaffold(
             appBar: appBar,
             body: Container(
-              color: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+              color:
+                  backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1200),
@@ -99,4 +100,3 @@ class WebOptimizedScaffold extends StatelessWidget {
     );
   }
 }
-

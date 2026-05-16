@@ -1,7 +1,7 @@
+import 'dart:developer' as developer;
 import 'package:complaints/domain/entities/app_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:collection/collection.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/dimensions.dart';
 import '../../../core/constants/app_constants.dart';
@@ -12,8 +12,10 @@ import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_event.dart';
 import '../../blocs/user/user_state.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
+import '../../../core/routes/app_routes.dart';
 
 class ManageUsersPage extends StatefulWidget {
   const ManageUsersPage({super.key});
@@ -36,6 +38,9 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Manage Users'),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.manageUsers,
+      ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
           if (authState is AuthAuthenticated) {
@@ -232,41 +237,26 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
               ],
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            Row(
+            Wrap(
+              spacing: AppDimensions.spacingM,
+              runSpacing: AppDimensions.spacingS,
               children: [
-                Icon(Icons.group, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Text(
-                  'Team: ${user.team}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const Spacer(),
-                if (user.phone != null && user.phone!.isNotEmpty) ...[
-                  Icon(Icons.phone, size: 16, color: AppColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    user.phone!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+                _buildUserMeta(Icons.group, 'Team: ${user.team}'),
+                if (user.phone != null && user.phone!.isNotEmpty)
+                  _buildUserMeta(Icons.phone, user.phone!),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: AppDimensions.spacingS,
+              runSpacing: AppDimensions.spacingS,
               children: [
                 TextButton.icon(
                   onPressed: () => _showChangeRoleDialog(user),
                   icon: const Icon(Icons.edit, size: 16),
                   label: const Text('Change Role'),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
                 OutlinedButton.icon(
                   onPressed: user.isActive
                       ? () => _showDeactivateDialog(user)
@@ -287,7 +277,6 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
                 IconButton(
                   onPressed: () => _showDeleteUserDialog(user),
                   icon: const Icon(Icons.delete_forever, size: 18),
@@ -302,6 +291,28 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
     );
   }
 
+  Widget _buildUserMeta(IconData icon, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: AppColors.textSecondary),
+        const SizedBox(width: 4),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 220),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildRoleChip(String role) {
     Color chipColor;
     Color backgroundColor;
@@ -309,16 +320,16 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
     switch (role.toLowerCase()) {
       case 'admin':
         chipColor = AppColors.error;
-        backgroundColor = AppColors.error.withOpacity(0.1);
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
         break;
       case 'manager':
         chipColor = AppColors.primary;
-        backgroundColor = AppColors.primary.withOpacity(0.1);
+        backgroundColor = AppColors.primary.withValues(alpha: 0.1);
         break;
       case 'employee':
       default:
         chipColor = AppColors.secondary;
-        backgroundColor = AppColors.secondary.withOpacity(0.1);
+        backgroundColor = AppColors.secondary.withValues(alpha: 0.1);
         break;
     }
 
@@ -373,7 +384,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                 Text('Current role: ${user.role}'),
                 const SizedBox(height: AppDimensions.spacingM),
                 DropdownButtonFormField<String>(
-                  value: selectedRole,
+                  initialValue: selectedRole,
                   decoration: const InputDecoration(
                     labelText: 'New Role',
                     border: OutlineInputBorder(),
@@ -535,9 +546,11 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingS),
               decoration: BoxDecoration(
-                color: AppColors.warning.withOpacity(0.1),
+                color: AppColors.warning.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.warning.withValues(alpha: 0.3),
+                ),
               ),
               child: const Row(
                 children: [
@@ -671,25 +684,23 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
           ),
           const SizedBox(height: 8),
           // Category checkboxes
-          ...AppConstants.taskCategories
-              .map(
-                (category) => CheckboxListTile(
-                  title: Text(category, style: const TextStyle(fontSize: 13)),
-                  value: selectedCategories.contains(category),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        selectedCategories.add(category);
-                      } else {
-                        selectedCategories.remove(category);
-                      }
-                    });
-                  },
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-              )
-              .toList(),
+          ...AppConstants.taskCategories.map(
+            (category) => CheckboxListTile(
+              title: Text(category, style: const TextStyle(fontSize: 13)),
+              value: selectedCategories.contains(category),
+              onChanged: (bool? value) {
+                setState(() {
+                  if (value == true) {
+                    selectedCategories.add(category);
+                  } else {
+                    selectedCategories.remove(category);
+                  }
+                });
+              },
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
         ],
       ),
     );
@@ -703,25 +714,32 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
   ) {
     // Check if role changed
     if (selectedRole != user.role) {
-      print('Role changed: ${user.role} -> $selectedRole');
+      developer.log('Role changed: ${user.role} -> $selectedRole');
       return true;
     }
 
     // Check if categories changed (only relevant for managers)
     if (selectedRole == 'Manager') {
       final currentCategories = user.managedCategories ?? [];
-      // Use DeepCollectionEquality to properly compare list contents
-      final hasChanges = !const DeepCollectionEquality().equals(
+      final hasChanges = !_haveSameCategories(
         selectedCategories,
         currentCategories,
       );
-      print('Categories comparison:');
-      print('  Current: $currentCategories');
-      print('  Selected: $selectedCategories');
-      print('  Has changes: $hasChanges');
+      developer.log('Categories comparison:');
+      developer.log('  Current: $currentCategories');
+      developer.log('  Selected: $selectedCategories');
+      developer.log('  Has changes: $hasChanges');
       return hasChanges;
     }
 
     return false;
+  }
+
+  bool _haveSameCategories(List<String> first, List<String> second) {
+    if (first.length != second.length) return false;
+    final firstSet = first.toSet();
+    final secondSet = second.toSet();
+    return firstSet.length == secondSet.length &&
+        firstSet.containsAll(secondSet);
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:complaints/core/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import '../../blocs/tasks/task_bloc.dart';
 import '../../blocs/tasks/task_event.dart';
 import '../../blocs/tasks/task_state.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/app_bottom_navigation.dart';
 import '../../widgets/notifications/notification_badge.dart';
 import '../../widgets/tasks/task_card.dart';
 import '../../widgets/dashboard/stats_card.dart';
@@ -32,7 +34,7 @@ class _ManagerHomePageState extends State<ManagerHomePage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadNotificationCount();
-    print('Manager Home Page: Loading tasks...');
+    developer.log('Manager Home Page: Loading tasks...');
     _loadTasks();
   }
 
@@ -42,11 +44,13 @@ class _ManagerHomePageState extends State<ManagerHomePage>
     if (authState is AuthAuthenticated) {
       if (authState.user.isAdmin) {
         // Admins see all tasks
-        print('Manager Home Page: Loading all tasks for admin...');
+        developer.log('Manager Home Page: Loading all tasks for admin...');
         context.read<TaskBloc>().add(const LoadAllTasks());
       } else if (authState.user.isManager) {
         // Managers see filtered tasks by their managed categories
-        print('Manager Home Page: Loading filtered tasks for manager...');
+        developer.log(
+          'Manager Home Page: Loading filtered tasks for manager...',
+        );
         context.read<TaskBloc>().add(const LoadTasksForManager());
       }
     }
@@ -173,9 +177,14 @@ class _ManagerHomePageState extends State<ManagerHomePage>
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNavigation(
+        currentRoute: AppRoutes.managerHome,
+      ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
-          print('Manager Home Page - Auth State: ${authState.runtimeType}');
+          developer.log(
+            'Manager Home Page - Auth State: ${authState.runtimeType}',
+          );
 
           if (authState is AuthAuthenticated) {
             return RefreshIndicator(
@@ -371,7 +380,7 @@ class _ManagerHomePageState extends State<ManagerHomePage>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -687,7 +696,7 @@ class _ManagerHomePageState extends State<ManagerHomePage>
           taskState.tasks.isEmpty
               ? _buildEmptyState()
               : Column(
-                  children: taskState.tasks
+                  children: _prioritizedTasks(taskState.tasks)
                       .take(5) // Show recent 5 tasks
                       .map(
                         (task) => Padding(
@@ -707,6 +716,19 @@ class _ManagerHomePageState extends State<ManagerHomePage>
           _buildEmptyState(),
       ],
     );
+  }
+
+  List<dynamic> _prioritizedTasks(List<dynamic> tasks) {
+    final sorted = List<dynamic>.from(tasks)
+      ..sort((a, b) {
+        final aDone = a.status == 'Completed' || a.status == 'Cancelled';
+        final bDone = b.status == 'Completed' || b.status == 'Cancelled';
+        if (aDone != bDone) return aDone ? 1 : -1;
+        if (a.priority == 'Urgent' && b.priority != 'Urgent') return -1;
+        if (a.priority != 'Urgent' && b.priority == 'Urgent') return 1;
+        return b.dateReported.compareTo(a.dateReported);
+      });
+    return sorted;
   }
 
   Widget _buildEmptyState() {

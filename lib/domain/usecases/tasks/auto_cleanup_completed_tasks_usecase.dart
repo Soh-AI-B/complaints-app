@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:dartz/dartz.dart';
 import '../../../core/error/failures.dart';
 import '../../entities/task.dart' as entities;
@@ -25,8 +26,10 @@ class AutoCleanupCompletedTasksUseCase {
     int completedTasksRetentionDays = 2,
     int cancelledTasksRetentionDays = 1,
   }) async {
-    print('🧹 AutoCleanupCompletedTasksUseCase: Starting cleanup process...');
-    print(
+    developer.log(
+      '🧹 AutoCleanupCompletedTasksUseCase: Starting cleanup process...',
+    );
+    developer.log(
       '🧹 Retention policy: Completed($completedTasksRetentionDays days), Cancelled($cancelledTasksRetentionDays days)',
     );
 
@@ -39,7 +42,7 @@ class AutoCleanupCompletedTasksUseCase {
         Duration(days: cancelledTasksRetentionDays),
       );
 
-      print(
+      developer.log(
         '🧹 Cutoff dates: Completed(${completedCutoffDate.toIso8601String()}), Cancelled(${cancelledCutoffDate.toIso8601String()})',
       );
 
@@ -60,7 +63,9 @@ class AutoCleanupCompletedTasksUseCase {
             return task.dateUpdated.isBefore(completedCutoffDate);
           }).toList();
 
-          print('🧹 Found ${tasksToDelete.length} completed tasks to delete');
+          developer.log(
+            '🧹 Found ${tasksToDelete.length} completed tasks to delete',
+          );
 
           for (final task in tasksToDelete) {
             final deleteResult = await _deleteTaskWithCleanup(task);
@@ -89,7 +94,9 @@ class AutoCleanupCompletedTasksUseCase {
             return task.dateUpdated.isBefore(cancelledCutoffDate);
           }).toList();
 
-          print('🧹 Found ${tasksToDelete.length} cancelled tasks to delete');
+          developer.log(
+            '🧹 Found ${tasksToDelete.length} cancelled tasks to delete',
+          );
 
           for (final task in tasksToDelete) {
             final deleteResult = await _deleteTaskWithCleanup(task);
@@ -112,17 +119,21 @@ class AutoCleanupCompletedTasksUseCase {
         completedAt: now,
       );
 
-      print(
+      developer.log(
         '🧹 ✅ Cleanup completed: ${result.deletedTasksCount} tasks, ${result.deletedImagesCount} images deleted',
       );
       if (result.errors.isNotEmpty) {
-        print('🧹 ⚠️ ${result.errors.length} errors occurred during cleanup');
-        result.errors.forEach((error) => print('🧹 ❌ $error'));
+        developer.log(
+          '🧹 ⚠️ ${result.errors.length} errors occurred during cleanup',
+        );
+        for (final error in result.errors) {
+          developer.log('🧹 ❌ $error');
+        }
       }
 
       return Right(result);
     } catch (e) {
-      print('🧹 ❌ Unexpected error during cleanup: $e');
+      developer.log('🧹 ❌ Unexpected error during cleanup: $e');
       return Left(ServerFailure(message: 'Auto-cleanup failed: $e'));
     }
   }
@@ -130,7 +141,7 @@ class AutoCleanupCompletedTasksUseCase {
   /// Delete a single task and clean up its associated image
   Future<TaskDeleteResult> _deleteTaskWithCleanup(entities.Task task) async {
     try {
-      print('🧹 Deleting task: ${task.taskId} (${task.title})');
+      developer.log('🧹 Deleting task: ${task.taskId} (${task.title})');
 
       // Delete the task from database
       final deleteResult = await repository.deleteTask(task.taskId);
@@ -147,20 +158,22 @@ class AutoCleanupCompletedTasksUseCase {
           int deletedImagesCount = 0;
 
           // Clean up related notifications
-          print('🧹 🔔 Cleaning up notifications for task ${task.taskId}');
+          developer.log(
+            '🧹 🔔 Cleaning up notifications for task ${task.taskId}',
+          );
           final notificationResult = await notificationRepository
               .deleteNotificationsByTaskId(task.taskId);
           notificationResult.fold(
-            (failure) => print(
+            (failure) => developer.log(
               '🧹 ⚠️ Failed to delete notifications: ${failure.message}',
             ),
-            (_) => print('🧹 ✅ Notifications deleted successfully'),
+            (_) => developer.log('🧹 ✅ Notifications deleted successfully'),
           );
 
           // Clean up all associated images (both old and new format)
           final imageUrls = task.allImageUrls;
           if (imageUrls.isNotEmpty) {
-            print(
+            developer.log(
               '🧹 🖼️ Found ${imageUrls.length} images to clean up for task ${task.taskId}',
             );
             for (final imageUrl in imageUrls) {
@@ -189,25 +202,25 @@ class AutoCleanupCompletedTasksUseCase {
   /// Clean up task image from Cloudinary storage
   Future<bool> _cleanupTaskImage(String imageUrl) async {
     try {
-      print('🧹 🖼️ Cleaning up image: $imageUrl');
+      developer.log('🧹 🖼️ Cleaning up image: $imageUrl');
 
       if (imageUrl.contains('cloudinary.com')) {
         final publicId = cloudinaryService.extractPublicId(imageUrl);
         final success = await cloudinaryService.deleteImage(publicId);
 
         if (success) {
-          print('🧹 🖼️ ✅ Image deleted successfully');
+          developer.log('🧹 🖼️ ✅ Image deleted successfully');
         } else {
-          print('🧹 🖼️ ⚠️ Image deletion failed');
+          developer.log('🧹 🖼️ ⚠️ Image deletion failed');
         }
 
         return success;
       } else {
-        print('🧹 🖼️ ⚠️ Not a Cloudinary URL, skipping');
+        developer.log('🧹 🖼️ ⚠️ Not a Cloudinary URL, skipping');
         return false;
       }
     } catch (e) {
-      print('🧹 🖼️ ❌ Error cleaning up image: $e');
+      developer.log('🧹 🖼️ ❌ Error cleaning up image: $e');
       return false;
     }
   }

@@ -7,7 +7,6 @@ import 'app.dart';
 import 'injection_container.dart' as di;
 import 'core/services/fcm_service.dart';
 import 'core/services/local_notification_service.dart';
-import 'core/services/web_redirect_service.dart';
 import 'core/services/platform_service.dart';
 
 // Background message handler - must be registered before Firebase initialization

@@ -143,6 +143,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   }
 
   // Delete all notifications for a user
+  @override
   Future<void> deleteAllNotifications(String userEmail) async {
     try {
       final snapshot = await firestore

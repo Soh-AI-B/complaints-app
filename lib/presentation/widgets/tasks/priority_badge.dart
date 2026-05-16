@@ -34,11 +34,14 @@ class PriorityBadge extends StatelessWidget {
         vertical: compact ? 2 : 4,
       ),
       decoration: BoxDecoration(
-        color: priorityColor.withOpacity(0.1),
+        color: priorityColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(
           compact ? 4 : AppDimensions.radiusS,
         ),
-        border: Border.all(color: priorityColor.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: priorityColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -355,7 +355,7 @@ class _TaskCleanupPageState extends State<TaskCleanupPage> {
 
           // Actions
           Card(
-            color: AppColors.warning.withOpacity(0.1),
+            color: AppColors.warning.withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: Column(
@@ -431,9 +431,11 @@ class _TaskCleanupPageState extends State<TaskCleanupPage> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingM),
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
