@@ -13,12 +13,20 @@ class UpdateUserProfileUseCase {
     String? name,
     String? phone,
     String? team,
+    bool? notificationEnabled,
+    bool? taskReminderNotificationsEnabled,
+    bool? newTaskNotificationsEnabled,
+    List<String>? notificationTimes,
   }) async {
     return await repository.updateUserProfile(
       email: email,
       name: name,
       phone: phone,
       team: team,
+      notificationEnabled: notificationEnabled,
+      taskReminderNotificationsEnabled: taskReminderNotificationsEnabled,
+      newTaskNotificationsEnabled: newTaskNotificationsEnabled,
+      notificationTimes: notificationTimes,
     );
   }
 }

@@ -12,6 +12,10 @@ class UserModel extends User {
     required super.createdAt,
     required super.isActive,
     super.managedCategories,
+    super.notificationEnabled = true,
+    super.taskReminderNotificationsEnabled = true,
+    super.newTaskNotificationsEnabled = true,
+    super.notificationTimes,
   });
 
   // Create from JSON
@@ -26,6 +30,14 @@ class UserModel extends User {
       isActive: json['is_active'] as bool,
       managedCategories: json['managed_categories'] != null
           ? List<String>.from(json['managed_categories'] as List)
+          : null,
+      notificationEnabled: json['notification_enabled'] as bool?,
+      taskReminderNotificationsEnabled:
+          json['task_reminder_notifications_enabled'] as bool?,
+      newTaskNotificationsEnabled:
+          json['new_task_notifications_enabled'] as bool?,
+      notificationTimes: json['notification_times'] != null
+          ? List<String>.from(json['notification_times'] as List)
           : null,
     );
   }
@@ -64,6 +76,14 @@ class UserModel extends User {
       managedCategories: data['managed_categories'] != null
           ? List<String>.from(data['managed_categories'] as List)
           : null,
+      notificationEnabled: data['notification_enabled'] as bool?,
+      taskReminderNotificationsEnabled:
+          data['task_reminder_notifications_enabled'] as bool?,
+      newTaskNotificationsEnabled:
+          data['new_task_notifications_enabled'] as bool?,
+      notificationTimes: data['notification_times'] != null
+          ? List<String>.from(data['notification_times'] as List)
+          : null,
     );
   }
 
@@ -82,6 +102,14 @@ class UserModel extends User {
       managedCategories: data['managed_categories'] != null
           ? List<String>.from(data['managed_categories'] as List)
           : null,
+      notificationEnabled: data['notification_enabled'] ?? true,
+      taskReminderNotificationsEnabled:
+          data['task_reminder_notifications_enabled'] ?? true,
+      newTaskNotificationsEnabled:
+          data['new_task_notifications_enabled'] ?? true,
+      notificationTimes: data['notification_times'] != null
+          ? List<String>.from(data['notification_times'] as List)
+          : const ['08:00', '12:00', '16:00'],
     );
   }
 
@@ -96,6 +124,13 @@ class UserModel extends User {
       'created_at': _dateTimeToString(createdAt),
       'is_active': isActive,
       if (managedCategories != null) 'managed_categories': managedCategories,
+      if (notificationEnabled != null)
+        'notification_enabled': notificationEnabled,
+      if (taskReminderNotificationsEnabled != null)
+        'task_reminder_notifications_enabled': taskReminderNotificationsEnabled,
+      if (newTaskNotificationsEnabled != null)
+        'new_task_notifications_enabled': newTaskNotificationsEnabled,
+      if (notificationTimes != null) 'notification_times': notificationTimes,
     };
   }
 
@@ -110,6 +145,13 @@ class UserModel extends User {
       'created_at': Timestamp.fromDate(createdAt),
       'is_active': isActive,
       if (managedCategories != null) 'managed_categories': managedCategories,
+      if (notificationEnabled != null)
+        'notification_enabled': notificationEnabled,
+      if (taskReminderNotificationsEnabled != null)
+        'task_reminder_notifications_enabled': taskReminderNotificationsEnabled,
+      if (newTaskNotificationsEnabled != null)
+        'new_task_notifications_enabled': newTaskNotificationsEnabled,
+      if (notificationTimes != null) 'notification_times': notificationTimes,
       // NOTE: fcmTokens field is deliberately NOT included here to avoid overwriting
       // FCM tokens that are managed separately by FCMService
     };
@@ -126,6 +168,13 @@ class UserModel extends User {
       'updated_at': FieldValue.serverTimestamp(),
       'is_active': isActive,
       if (managedCategories != null) 'managed_categories': managedCategories,
+      if (notificationEnabled != null)
+        'notification_enabled': notificationEnabled,
+      if (taskReminderNotificationsEnabled != null)
+        'task_reminder_notifications_enabled': taskReminderNotificationsEnabled,
+      if (newTaskNotificationsEnabled != null)
+        'new_task_notifications_enabled': newTaskNotificationsEnabled,
+      if (notificationTimes != null) 'notification_times': notificationTimes,
       // fcmTokens is intentionally excluded to preserve existing tokens
     };
   }
@@ -141,6 +190,10 @@ class UserModel extends User {
       createdAt: createdAt,
       isActive: isActive,
       managedCategories: managedCategories,
+      notificationEnabled: notificationEnabled,
+      taskReminderNotificationsEnabled: taskReminderNotificationsEnabled,
+      newTaskNotificationsEnabled: newTaskNotificationsEnabled,
+      notificationTimes: notificationTimes,
     );
   }
 
@@ -155,6 +208,10 @@ class UserModel extends User {
       createdAt: user.createdAt,
       isActive: user.isActive,
       managedCategories: user.managedCategories,
+      notificationEnabled: user.notificationEnabled,
+      taskReminderNotificationsEnabled: user.taskReminderNotificationsEnabled,
+      newTaskNotificationsEnabled: user.newTaskNotificationsEnabled,
+      notificationTimes: user.notificationTimes,
     );
   }
 
@@ -169,6 +226,10 @@ class UserModel extends User {
     DateTime? createdAt,
     bool? isActive,
     List<String>? managedCategories,
+    bool? notificationEnabled,
+    bool? taskReminderNotificationsEnabled,
+    bool? newTaskNotificationsEnabled,
+    List<String>? notificationTimes,
   }) {
     return UserModel(
       userEmail: userEmail ?? this.userEmail,
@@ -179,6 +240,13 @@ class UserModel extends User {
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
       managedCategories: managedCategories ?? this.managedCategories,
+      notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      taskReminderNotificationsEnabled:
+          taskReminderNotificationsEnabled ??
+          this.taskReminderNotificationsEnabled,
+      newTaskNotificationsEnabled:
+          newTaskNotificationsEnabled ?? this.newTaskNotificationsEnabled,
+      notificationTimes: notificationTimes ?? this.notificationTimes,
     );
   }
 

@@ -12,6 +12,10 @@ abstract class UserRepository {
     String? name,
     String? phone,
     String? team,
+    bool? notificationEnabled,
+    bool? taskReminderNotificationsEnabled,
+    bool? newTaskNotificationsEnabled,
+    List<String>? notificationTimes,
   });
 
   // Get all users (for managers)

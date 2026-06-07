@@ -62,6 +62,10 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       name: event.name,
       phone: event.phone,
       team: event.team,
+      notificationEnabled: event.notificationEnabled,
+      taskReminderNotificationsEnabled: event.taskReminderNotificationsEnabled,
+      newTaskNotificationsEnabled: event.newTaskNotificationsEnabled,
+      notificationTimes: event.notificationTimes,
     );
 
     result.fold(

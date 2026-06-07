@@ -147,6 +147,9 @@ class _ManagerHomePageState extends State<ManagerHomePage>
                 case 'analytics':
                   Navigator.pushNamed(context, AppRoutes.analytics);
                   break;
+                case 'settings':
+                  Navigator.pushNamed(context, AppRoutes.settings);
+                  break;
                 case 'logout':
                   _showLogoutDialog();
                   break;
@@ -160,6 +163,16 @@ class _ManagerHomePageState extends State<ManagerHomePage>
                     Icon(Icons.analytics_outlined, color: AppColors.primary),
                     SizedBox(width: 8),
                     Text('Analytics'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'settings',
+                child: Row(
+                  children: [
+                    Icon(Icons.settings_outlined, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text('Settings'),
                   ],
                 ),
               ),

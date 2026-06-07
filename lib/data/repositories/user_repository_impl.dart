@@ -51,6 +51,10 @@ class UserRepositoryImpl implements UserRepository {
     String? name,
     String? phone,
     String? team,
+    bool? notificationEnabled,
+    bool? taskReminderNotificationsEnabled,
+    bool? newTaskNotificationsEnabled,
+    List<String>? notificationTimes,
   }) async {
     if (await networkInfo.isConnected) {
       try {
@@ -58,6 +62,20 @@ class UserRepositoryImpl implements UserRepository {
         if (name != null) updates['name'] = name;
         if (phone != null) updates['phone'] = phone;
         if (team != null) updates['team'] = team;
+        if (notificationEnabled != null) {
+          updates['notification_enabled'] = notificationEnabled;
+        }
+        if (taskReminderNotificationsEnabled != null) {
+          updates['task_reminder_notifications_enabled'] =
+              taskReminderNotificationsEnabled;
+        }
+        if (newTaskNotificationsEnabled != null) {
+          updates['new_task_notifications_enabled'] =
+              newTaskNotificationsEnabled;
+        }
+        if (notificationTimes != null) {
+          updates['notification_times'] = notificationTimes;
+        }
         updates['updated_at'] = DateTime.now();
 
         final updatedUser = await remoteDataSource.updateUser(email, updates);

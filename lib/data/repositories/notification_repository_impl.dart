@@ -499,6 +499,18 @@ class NotificationRepositoryImpl implements NotificationRepository {
         developer.log('🔔 🔍 DEBUG: Processing user: ${doc.id}');
         developer.log('🔔 🔍 DEBUG: User data: $userData');
 
+        final notificationsEnabled =
+            userData['notification_enabled'] as bool? ?? true;
+        final newTaskNotificationsEnabled =
+            userData['new_task_notifications_enabled'] as bool? ?? true;
+
+        if (!notificationsEnabled || !newTaskNotificationsEnabled) {
+          developer.log(
+            '🔔 🔕 Skipping ${doc.id}: new-task notifications disabled',
+          );
+          continue;
+        }
+
         final userTokens = userData['fcmTokens'] as List<dynamic>?;
         developer.log('🔔 🔍 DEBUG: FCM tokens for ${doc.id}: $userTokens');
 

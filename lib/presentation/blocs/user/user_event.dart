@@ -23,16 +23,33 @@ class UpdateUserProfile extends UserEvent {
   final String? name;
   final String? phone;
   final String? team;
+  final bool? notificationEnabled;
+  final bool? taskReminderNotificationsEnabled;
+  final bool? newTaskNotificationsEnabled;
+  final List<String>? notificationTimes;
 
   const UpdateUserProfile({
     required this.userEmail,
     this.name,
     this.phone,
     this.team,
+    this.notificationEnabled,
+    this.taskReminderNotificationsEnabled,
+    this.newTaskNotificationsEnabled,
+    this.notificationTimes,
   });
 
   @override
-  List<Object?> get props => [userEmail, name, phone, team];
+  List<Object?> get props => [
+    userEmail,
+    name,
+    phone,
+    team,
+    notificationEnabled,
+    taskReminderNotificationsEnabled,
+    newTaskNotificationsEnabled,
+    notificationTimes,
+  ];
 }
 
 // Load all users (for managers)

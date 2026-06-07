@@ -12,6 +12,10 @@ class User extends Equatable {
   final bool isActive;
   final List<String>?
   managedCategories; // Categories this manager handles (null = all categories for backward compatibility)
+  final bool? notificationEnabled;
+  final bool? taskReminderNotificationsEnabled;
+  final bool? newTaskNotificationsEnabled;
+  final List<String>? notificationTimes;
 
   const User({
     required this.userEmail,
@@ -22,6 +26,10 @@ class User extends Equatable {
     required this.createdAt,
     required this.isActive,
     this.managedCategories,
+    this.notificationEnabled,
+    this.taskReminderNotificationsEnabled,
+    this.newTaskNotificationsEnabled,
+    this.notificationTimes,
   });
 
   // Copy with method for creating modified copies
@@ -34,6 +42,10 @@ class User extends Equatable {
     DateTime? createdAt,
     bool? isActive,
     List<String>? managedCategories,
+    bool? notificationEnabled,
+    bool? taskReminderNotificationsEnabled,
+    bool? newTaskNotificationsEnabled,
+    List<String>? notificationTimes,
   }) {
     return User(
       userEmail: userEmail ?? this.userEmail,
@@ -44,6 +56,13 @@ class User extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
       managedCategories: managedCategories ?? this.managedCategories,
+      notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      taskReminderNotificationsEnabled:
+          taskReminderNotificationsEnabled ??
+          this.taskReminderNotificationsEnabled,
+      newTaskNotificationsEnabled:
+          newTaskNotificationsEnabled ?? this.newTaskNotificationsEnabled,
+      notificationTimes: notificationTimes ?? this.notificationTimes,
     );
   }
 
@@ -136,6 +155,10 @@ class User extends Equatable {
     createdAt,
     isActive,
     managedCategories,
+    notificationEnabled,
+    taskReminderNotificationsEnabled,
+    newTaskNotificationsEnabled,
+    notificationTimes,
   ];
 
   @override

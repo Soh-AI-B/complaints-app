@@ -20,6 +20,7 @@ import '../../presentation/pages/manager/task_management_page.dart';
 import '../../presentation/pages/manager/analytics_page.dart';
 import '../../presentation/pages/manager/manage_users_page.dart';
 import '../../presentation/pages/manager/notifications_page.dart';
+import '../../presentation/pages/settings/settings_page.dart';
 import '../../presentation/pages/admin/admin_setup_page.dart';
 import '../../domain/entities/task.dart';
 import 'app_routes.dart';
@@ -143,6 +144,14 @@ class RouteGenerator {
           builder: (context) => BlocProvider(
             create: (context) => di.sl<NotificationBloc>(),
             child: const NotificationsPage(),
+          ),
+        );
+
+      case AppRoutes.settings:
+        return MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => di.sl<UserBloc>(),
+            child: const SettingsPage(),
           ),
         );
 

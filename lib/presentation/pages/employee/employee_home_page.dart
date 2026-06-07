@@ -51,6 +51,9 @@ class _EmployeeHomePageState extends State<EmployeeHomePage> {
                     const SnackBar(content: Text('Profile page coming soon')),
                   );
                   break;
+                case 'settings':
+                  Navigator.pushNamed(context, AppRoutes.settings);
+                  break;
                 case 'logout':
                   _showLogoutDialog();
                   break;
@@ -64,6 +67,16 @@ class _EmployeeHomePageState extends State<EmployeeHomePage> {
                     Icon(Icons.person_outline, color: AppColors.primary),
                     SizedBox(width: 8),
                     Text('Profile'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'settings',
+                child: Row(
+                  children: [
+                    Icon(Icons.settings_outlined, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text('Settings'),
                   ],
                 ),
               ),
